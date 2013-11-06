@@ -1,5 +1,21 @@
 # TetGen: Release Notes
 
+## Version 1.5.0 (November 4, 2013)
+
+-   Improved the efficiency of the mesh data structure
+    (tetrahedron-based).
+-   Implemented a new edge flip algorithm that does recursive
+    combination of elementary flips.
+-   Improved the Bowyer-Watson point insertion algorithm for robustness
+    and efficiency.
+-   Implemented a new algorithm for boundary recovery (the -Y option).
+-   Implemented Shewchuk\'s CDT flip algorithm (the -p option).
+-   Implemented a new Delaunay refinement algorithm (the -q option) for
+    handling small input angles (sharp features).
+-   Fully supports isolated input segments and with segment markers
+    (which do not attach to any facet).
+-   Many new options and parameters for improving mesh quality and mesh
+    optimization.
 
 ## Version 1.4.3 (September 6, 2009)
 

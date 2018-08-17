@@ -2,6 +2,7 @@
 
 ## Version 1.5.0 (November 4, 2013)
 
+-   License switched to AGPLv3
 -   Improved the efficiency of the mesh data structure
     (tetrahedron-based).
 -   Implemented a new edge flip algorithm that does recursive

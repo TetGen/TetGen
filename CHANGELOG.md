@@ -1,4 +1,24 @@
 # TetGen: Release Notes
+## Version 1.6.0 (August 31, 2020)
+
+-   Improved the speed of the Bowyer-Watson point insertion algorithm
+    for creating Delaunay tetrahedralization.
+-   Improved the robustness of the boundary recovery algorithm (-p -Y
+    options) for creating constrained tetrahedralizations. Now the
+    default algorithm for the \`\`-p\" option (boundary recobvery) is
+    the constrained tetrahedralization algorithm. It is robust and it
+    uses less Steiner points than the constrained Delaunay
+    tetrahedralization (CDT) algorothm uses. The option to use the CDT
+    algorithm is \`\`-p -D\".
+-   A new implementation of the constrained Delaunay refinement
+    algorithm (-q option). It uses new Steiner points insertion schemes
+    to remove badly-shaped elements.
+-   Implemented a new set of mesh smoothing and mesh improvement
+    operations (-O -o) for optimizing the quality of the meshes. The
+    overall mesh quality has been improved.
+-   (Change of the -d option) To detect self-intersection in the input
+    surface mesh is now directly done in the constrained
+    tetrahedralization algorithm (the -p option).
 
 ## Version 1.5.0 (November 4, 2013)
 

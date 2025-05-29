@@ -8,10 +8,10 @@ TetGen versions up to v1.6.0 have been developed by [Hang Si](https://github.com
 This repository provides the source code of the most recent versions of TetGen.
 The following releases are provided:
 
-- [v1.4.3, 2011](https://github.com/TetGen/TetGen/archive/refs/tags/v1.4.3.tar.gz): [MIT license with noncommercial clause](https://raw.githubusercontent.com/TetGen/TetGen/refs/tags/v1.4.3/LICENSE)
-- [v1.5.0, 2013](https://github.com/TetGen/TetGen/archive/refs/tags/v1.5.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html)
-- [v1.5.1, 2018](https://github.com/TetGen/TetGen/archive/refs/tags/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html) recommended as most stable version
-- [v1.6.0, 2020](https://github.com/TetGen/TetGen/archive/refs/tags/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html) most recent version with some rough edges
+- [v1.4.3, 2011](https://github.com/TetGen/TetGen/archive/refs/tags/v1.4.3.tar.gz): [MIT license with noncommercial clause](https://raw.githubusercontent.com/TetGen/TetGen/refs/tags/v1.4.3/LICENSE).
+- [v1.5.0, 2013](https://github.com/TetGen/TetGen/archive/refs/tags/v1.5.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html).
+- [v1.5.1, 2018](https://github.com/TetGen/TetGen/archive/refs/tags/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), recommended as most stable version.
+- [v1.6.0, 2020](https://github.com/TetGen/TetGen/archive/refs/tags/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), most recent version with some rough edges.
 
 It is planned to resume active development of TetGen and to publish future versions of TetGen via this repository.
 
@@ -24,5 +24,4 @@ It is planned to resume active development of TetGen and to publish future versi
 
 TetGen versions developed at WIAS are distributed under a dual licensing scheme.  As an alternative to the use of TetGen under the AGPLv3 license, consider the option to obtain a commercial license for a fee.  These licenses are offered by the Weierstrass Institute for Applied Analysis and Stochastics (WIAS). As a rule, licenses are provided "as-is", unlimited in time for a one time fee.  Please send corresponding requests to: `tetgen at wias-berlin.de`.  Please do not forget to include some description of your company and the realm of its activities.
 
-Due to the change of affilliation of Hang Si, the continuation of this dual licensing scheme for future versions of TetGen is uncertain.
-
+Due to the change of affiliation of Hang Si, details about the continuation of this dual licensing scheme for future versions of TetGen will be announced in the future. Please feel free to contact us if you have any questions.

@@ -11,11 +11,10 @@ is a mirror of the codeberg repository.
 
 This repository provides the source code of the most recent versions of TetGen.
 The following releases are provided:
-
-- [v1.4.3, 2011](https://codeberg.org/TetGen/TetGen/archive/refs/tags/v1.4.3.tar.gz): [MIT license with noncommercial clause](https://raw.githubusercontent.com/TetGen/TetGen/refs/tags/v1.4.3/LICENSE).
-- [v1.5.0, 2013](https://codeberg.org/TetGen/TetGen/archive/refs/tags/v1.5.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html).
-- [v1.5.1, 2018](https://codeberg.org/TetGen/TetGen/archive/refs/tags/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), recommended as most stable version.
-- [v1.6.0, 2020](https://codeberg.org/TetGen/TetGen/archive/refs/tags/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), most recent version with some rough edges.
+- [v1.4.3, 2011](https://codeberg.org/TetGen/TetGen/archive/v1.4.3.tar.gz): [MIT license with noncommercial clause](https://raw.githubusercontent.com/TetGen/TetGen/refs/tags/v1.4.3/LICENSE).
+- [v1.5.0, 2013](https://codeberg.org/TetGen/TetGen/archive/v1.5.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html).
+- [v1.5.1, 2018](https://codeberg.org/TetGen/TetGen/archive/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), recommended as most stable version.
+- [v1.6.0, 2020](https://codeberg.org/TetGen/TetGen/archive/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), most recent version with some rough edges.
 
 It is planned to resume active development of TetGen and to publish future versions of TetGen via this repository.
 

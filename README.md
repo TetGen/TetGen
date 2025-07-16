@@ -3,7 +3,7 @@ TetGen
 
 TetGen is a program to generate tetrahedral meshes of any 3D polyhedral domains.  TetGen generates exact constrained Delaunay tetrahedralizations, boundary conforming Delaunay meshes, and Voronoi partitions.
 
-TetGen versions up to v1.6.0 have been developed by [Hang Si](https://github.com/sihang0592) during his affiliation with [Weierstrass Institute for Applied Analysis and Stochastics, (WIAS) Berlin](https://www.wias-berlin.de/software/tetgen).
+TetGen versions up to v1.6.0 have been developed headed by [Hang Si](https://github.com/sihang0592) during his affiliation with [Weierstrass Institute for Applied Analysis and Stochastics, (WIAS) Berlin](https://www.wias-berlin.de/software/tetgen).
 
 The primary development repository is [https://codeberg.org/TetGen/TetGen](https://codeberg.org/TetGen/TetGen). Please
 open any issues in this repository. The github repository [https://github.com/TetGen/Tetgen](https://github.com/TetGen/Tetgen)
@@ -16,7 +16,7 @@ The following releases are provided:
 - [v1.5.1, 2018](https://codeberg.org/TetGen/TetGen/archive/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), recommended as most stable version.
 - [v1.6.0, 2020](https://codeberg.org/TetGen/TetGen/archive/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), most recent version with some rough edges.
 
-It is planned to resume active development of TetGen and to publish future versions of TetGen via this repository.
+It is planned to resume active development of TetGen in cooperation between the main developer Hang Si and  the Weierstrass Institute. Future versions of TetGen will be published via this repository.
 
 ## Documentation
 - Manuals are available in https://codeberg.org/TetGen/Manuals.

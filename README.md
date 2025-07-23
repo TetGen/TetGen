@@ -28,3 +28,8 @@ It is planned to resume active development of TetGen in cooperation between the 
 TetGen versions developed at WIAS are distributed under a dual licensing scheme.  As an alternative to the use of TetGen under the AGPLv3 license, consider the option to obtain a commercial license for a fee.  These licenses are offered by the Weierstrass Institute for Applied Analysis and Stochastics (WIAS). As a rule, licenses are provided "as-is", unlimited in time for a one time fee.  Please send corresponding requests to: `tetgen at wias-berlin.de`.  Please do not forget to include some description of your company and the realm of its activities.
 
 Due to the change of affiliation of Hang Si, details about the continuation of this dual licensing scheme for future versions of TetGen will be announced in the future. Please feel free to contact us if you have any questions.
+
+## Contributing
+
+By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](https://codeberg.org/TetGen/TetGen/src/branch/main/CONTRIBUTING.md)
+

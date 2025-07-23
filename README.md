@@ -31,5 +31,5 @@ Due to the change of affiliation of Hang Si, details about the continuation of t
 
 ## Contributing
 
-By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](https://codeberg.org/TetGen/TetGen/src/branch/main/CONTRIBUTING.md)
+By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](CONTRIBUTING.md).
 

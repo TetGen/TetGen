@@ -7,7 +7,7 @@ By submitting a contribution Contributor agrees to the following terms:
 
 ## Dual AGPLv3/MIT License Grant
 Contributor agrees that their contribution is provided under the GNU Affero General Public License v3 (AGPLv3) reproduced
-in  [LICENSE](https://codeberg.org/TetGen/TetGen/src/branch/main/LICENSE.md) or any later version and, in addition, under the following MIT License terms:
+in the file [LICENSE](LICENSE) or any later version and, in addition, under the following MIT License terms:
 
 ```text
 Copyright (c) [Year] [Contributor's Name]  

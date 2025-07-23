@@ -1,7 +1,7 @@
-Thank you very much for your interest in TetGen! Reporting your issue here helps to improve the code.
+Thank you very much for your interest in TetGen! Reporting your issue helps to improve the code.
 
 ### Legal
-By opening this issue, you agree to the terms of the contributor license agreement stated in [CONTRIBUTING.md](https://codeberg.org/TetGen/TetGen/src/branch/main/CONTRIBUTING.md)
+By opening this issue, you agree to the terms of the Contributor License Agreement (CLA) stated in [CONTRIBUTING.md](https://codeberg.org/TetGen/TetGen/src/branch/main/CONTRIBUTING.md).
 
 ### Kind of issue (bug, feature request...):
 

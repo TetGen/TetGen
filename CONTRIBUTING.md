@@ -1,16 +1,13 @@
-# Notes
-- Contributors should be aware that under this CLA, commercial licenses for versions of TetGen which include their contributions under the MIT license be may provided to customers by the maintainers or their contract partners
 # Contributor License Agreement (CLA)
 
-By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, Contributor agrees to the following terms:
+A "Contributor" is any person or entity that intentionally submits copyrighted material to the project,
+including but not limited to code, documentation, or other material, via a pull request, issue, or other means.
 
-## Grant of License
-Contributor hereby grants to the Project and its maintainers a perpetual, worldwide, non-exclusive, transferable, royalty-free, irrevocable license under all of Contributor's copyright and patent rights to:
-- Use, reproduce, modify, distribute, and publicly display/perform the contribution under the GNU Affero General Public License v3 (AGPLv3) or any later version;
-- Additionally, sublicense the contribution under the MIT License (included below)
+By submitting a contribution Contributor agrees to the following terms:
 
-## MIT License Grant
-Contributor agrees that their contribution may be made available under the following MIT License terms, in addition to AGPLv3:
+## Dual AGPLv3/MIT License Grant
+Contributor agrees that their contribution is provided under the GNU Affero General Public License v3 (AGPLv3) reproduced
+in  [LICENSE](https://codeberg.org/TetGen/TetGen/src/branch/main/LICENSE.md) or any later version and, in addition, under the following MIT License terms:
 
 ```text
 Copyright (c) [Year] [Contributor's Name]  
@@ -33,6 +30,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
 SOFTWARE.  
 ```
+
+
+## Annotating contributions to source code
+
+### Trivial changes
+Trivial changes (e.g., 1-2 line fixes or typo fixes) inherit the AGPLv3 license of the project and  without further annotation in addition are assumed to be licensed under the MIT license
+
+### Functions and nontrivial snippets of code 
+Functions and nontrivial snippets of code by default inherit the AGPLv3 license of the project and in addition shall be marked in a PR with an SPDX header as in this example:
+  ```
+  # SPDX-License-Identifier: MIT  
+  # Copyright (c) [Year] [Your Name]  
+  void frobnicate(int ntet)
+  {
+  ...
+  }
+  ```
 
 ## Representations and Warranties
 Contributor represents that:

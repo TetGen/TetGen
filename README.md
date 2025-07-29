@@ -31,5 +31,5 @@ Details about the extension of this dual licensing scheme for future versions of
 
 ## Contributing
 
-By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](CONTRIBUTING.md).
+By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](CONTRIBUTING.md). It is planned to revise this agreement, once the extension of the dual licensing scheme has been set up.
 

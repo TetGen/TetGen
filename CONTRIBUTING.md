@@ -7,11 +7,9 @@ By submitting a contribution Contributor agrees to the following terms:
 
 ## Dual AGPLv3/MIT License Grant
 Contributor agrees that their contribution is provided under the GNU Affero General Public License v3 (AGPLv3) reproduced
-in the file [LICENSE](LICENSE) or any later version and, in addition, under the following MIT License terms:
+in the file [LICENSE](LICENSE) or any later version and, in addition, grants the contribution under the MIT License terms below:
 
 ```text
-Copyright (c) [Year] [Contributor's Name]  
-
 Permission is hereby granted, free of charge, to any person obtaining a copy  
 of this software and associated documentation files (the "Software"), to deal  
 in the Software without restriction, including without limitation the rights  
@@ -31,17 +29,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.  
 ```
 
-
 ## Annotating contributions to source code
 
 ### Trivial changes
-Trivial changes (e.g., 1-2 line fixes or typo fixes) inherit the AGPLv3 license of the project and  without further annotation in addition are assumed to be licensed under the MIT license
+Trivial changes (e.g., 1-2 line fixes or typo fixes) inherit the AGPLv3 license of the project and without further annotation are also licensed under MIT as specified above.
 
 ### Functions and nontrivial snippets of code 
-Functions and nontrivial snippets of code by default inherit the AGPLv3 license of the project and in addition shall be marked in a PR with an SPDX header as in this example:
+Functions and nontrivial snippets of code by default inherit the AGPLv3 license of the project and are also licensed under MIT as specified above. They shall be marked in a PR with an SPDX header as in this example:
   ```
-  # SPDX-License-Identifier: MIT  
-  # Copyright (c) [Year] [Your Name]  
+  # SPDX-License-Identifier: AGPL-3.0-or-later OR MIT
+  # Copyright (c) [Year] [Contributor Name]
   void frobnicate(int ntet)
   {
   ...

@@ -48,6 +48,10 @@
 #ifndef tetgenH
 #define tetgenH
 
+#define TETGEN_MAJOR_VERSION 1
+#define TETGEN_MINOR_VERSION 6
+#define TETGEN_PATCH_VERSION 1
+
 // To compile TetGen as a library instead of an executable program, define
 //   the TETLIBRARY symbol.
 

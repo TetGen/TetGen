@@ -1,11 +1,15 @@
 # Set the minimum required version of cmake for a project.
 cmake_minimum_required(VERSION 3.16)
 
+include(CMakePackageConfigHelpers)
+
 project(TetGen
-  VERSION 1.6.0
+  VERSION 1.6.1
   DESCRIPTION "A Quality Tetrahedral Mesh Generator and 3D Delaunay Triangulator"
   LANGUAGES CXX
 )
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Add an executable to the project using the specified source files.
 add_executable(tetgen ${INC} ${SRC})
@@ -14,9 +18,43 @@ add_executable(tetgen ${INC} ${SRC})
 # In Linux/Unix, it will create libtet.a
 add_library(tet STATIC tetgen.cxx predicates.cxx)
 
-# Set properties on a target.
-# We use this here to set -DTETLIBRARY for when compiling the library.
-set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
+#Set properties on a target. 
+#We use this here to set -DTETLIBRARY for when compiling the
+#library
+target_include_directories(tet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>" "$<INSTALL_INTERFACE:include>")
+target_compile_definitions(tet PUBLIC TETLIBRARY)
+set_target_properties(tet PROPERTIES EXPORT_NAME TetGen)
+
+install(TARGETS tetgen RUNTIME DESTINATION bin)
+install(TARGETS tet LIBRARY DESTINATION lib)
+install(FILES tetgen.h DESTINATION include)
+install (FILES LICENSE DESTINATION share/tetgen)
+
+install(TARGETS tet EXPORT TetGenTargets)
+
+install(EXPORT TetGenTargets
+    FILE TetGenTargets.cmake
+    NAMESPACE TetGen::
+    DESTINATION lib/cmake/tetgen
+)
+
+configure_package_config_file (
+    ${CMAKE_CURRENT_SOURCE_DIR}/CMake/TetGenConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake
+    INSTALL_DESTINATION lib/cmake/tetgen
+    NO_SET_AND_CHECK_MACRO # No legacy style defines
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO # No components
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMinorVersion
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake DESTINATION lib/cmake/tetgen)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION lib/cmake/tetgen)
+
 
 ###############################################################################
 # Testing infrastructure using CTest

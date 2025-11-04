@@ -3072,6 +3072,7 @@ void tetgenbehavior::syntax()
   printf("    -r  Reconstructs a previously generated mesh.\n");
   printf("    -q  Refines mesh (to improve mesh quality).\n");
   printf("    -R  Mesh coarsening (to reduce the mesh elements).\n");
+  printf("    -K  Prevent mesh coarsening during mesh refinement.\n");
   printf("    -A  Assigns attributes to tetrahedra in different regions.\n");
   printf("    -a  Applies a maximum tetrahedron volume constraint.\n");
   printf("    -m  Applies a mesh sizing function.\n");
@@ -3505,6 +3506,8 @@ bool tetgenbehavior::parse_commandline(int argc, char **argv)
             growth_ratio = (REAL) strtod(workstring, (char **) NULL);
           }
         }
+      } else if (argv[i][j] == 'K') {
+        nocoarsen = 1;
       } else if (argv[i][j] == 'm') {
         metric = 1;
         if (((argv[i][j + 1] >= '0') && (argv[i][j + 1] <= '9')) ||
@@ -38822,7 +38825,7 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
 
   tv[5] = clock();
 
-  if (b->metric || b->coarsen) { // -m or -R
+  if ((b->metric || b->coarsen) &&  !b->nocoarsen) { // -m or -R and not -K
     m.meshcoarsening();
   }
 

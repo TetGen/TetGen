@@ -3508,6 +3508,8 @@ bool tetgenbehavior::parse_commandline(int argc, char **argv)
         }
       } else if (argv[i][j] == 'K') {
         nocoarsen = 1;
+      } else if (argv[i][j] == 'G') {
+        nometricswritten = 1;
       } else if (argv[i][j] == 'm') {
         metric = 1;
         if (((argv[i][j + 1] >= '0') && (argv[i][j + 1] <= '9')) ||
@@ -39000,7 +39002,7 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
     }
   }
 
-  if ((b->plc || b->refine) && b->metric) { // -m
+  if ((b->plc || b->refine) && b->metric && !b->nometricswritten) { // -m
     m.outmetrics(out);
   }
 

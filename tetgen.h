@@ -670,6 +670,7 @@ public:
   int nowarning;                                                   // '-W', 0.
   int verbose;                                                     // '-V', 0.
   int nocoarsen;                                                   // '-K', 0.
+  int nometricswritten;                                            // '-G', 0.
 
   // Parameters
   int vertexperblock;                                           // '-x', 4092.
@@ -801,6 +802,7 @@ public:
     nowarning = 0;
     verbose = 0;
     nocoarsen = 0;
+    nometricswritten = 0;
 
     vertexperblock = 4092;
     tetrahedraperblock = 8188;

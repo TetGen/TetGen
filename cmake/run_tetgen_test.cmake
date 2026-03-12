@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later OR MIT
+# Copyright (c) 2025 Jürgen Fuhrmann
+
 # cmake/run_tetgen_test.cmake — Pure-CMake test wrapper for TetGen
 #
 # Replaces the former shell wrapper (run_tetgen_test.sh) so that the test

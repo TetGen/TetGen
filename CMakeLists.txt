@@ -20,6 +20,8 @@ set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
 
 ###############################################################################
 # Testing infrastructure using CTest
+# SPDX-License-Identifier: AGPL-3.0-or-later OR MIT
+# Copyright (c) 2025 Jürgen Fuhrmann
 ###############################################################################
 #
 # Usage:

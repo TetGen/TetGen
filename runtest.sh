@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-or-later OR MIT
+# Copyright (c) 2024 Hang Si
 
 # runtest.sh
 #

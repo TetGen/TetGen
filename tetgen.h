@@ -80,6 +80,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <vector>
 #include <iomanip>
 #include <fstream>
 #include <iostream>

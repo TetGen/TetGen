@@ -121,7 +121,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
     # the test as skipped instead of failed.
     set_tests_properties("${_test_name}" PROPERTIES
       SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
-      TIMEOUT                 300
+      TIMEOUT                 30
     )
 
     # Add a label based on the file extension for filtering, e.g.:

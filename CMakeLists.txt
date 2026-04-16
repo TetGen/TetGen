@@ -42,18 +42,15 @@ set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
 #   10 -> SKIPPED (Input error detected)
 #   *  -> FAILED
 #
-# Per-test log files are written to <build-dir>/Testing/Logs/<inputfile>.log
+# Per-test log files are written to <build-dir>/Testing/Logs/<inputfile>_<flags>.log
 #
 
 include(CTest)
 
 # --- Configurable options ---------------------------------------------------
 
-set(TESTFILES_REPO "" CACHE STRING
+set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
   "URL or local path to the Git repository containing TetGen test files")
-
-set(TETGEN_TEST_FLAGS "-pqQ" CACHE STRING
-  "TetGen command-line flags used during testing")
 
 # --- Fetch test files and register tests ------------------------------------
 
@@ -79,18 +76,12 @@ if(BUILD_TESTING AND TESTFILES_REPO)
     endif()
   endif()
 
-  # Discover test input files (.smesh, .poly, .mesh).
-  # .node files accompany .smesh/.poly files and are not tested separately.
-  file(GLOB _test_inputs
-    "${TESTFILES_DIR}/*.smesh"
-    "${TESTFILES_DIR}/*.poly"
-    "${TESTFILES_DIR}/*.mesh"
-  )
+  # Load the explicit list of test entries (file + per-file flags).
+  # Edit cmake/TetGenTestFiles.cmake to add, remove, or change tests.
+  include("${CMAKE_SOURCE_DIR}/cmake/TetGenTestFiles.cmake")
 
-  list(SORT _test_inputs)
-
-  if(NOT _test_inputs)
-    message(WARNING "No test input files found in ${TESTFILES_DIR}")
+  if(NOT TETGEN_TESTS)
+    message(WARNING "No test entries listed in cmake/TetGenTestFiles.cmake")
   endif()
 
   # Path to the pure-CMake test wrapper script (no shell dependency)
@@ -100,41 +91,58 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   set(TETGEN_LOG_DIR "${CMAKE_BINARY_DIR}/Testing/Logs")
   file(MAKE_DIRECTORY "${TETGEN_LOG_DIR}")
 
-  foreach(_input IN LISTS _test_inputs)
-    # Derive a descriptive test name: tetgen/<basename>  (e.g. tetgen/Cow_cut.smesh)
-    get_filename_component(_basename "${_input}" NAME)
-    set(_test_name "tetgen/${_basename}")
+  set(_num_tests 0)
 
-    add_test(
-      NAME    "${_test_name}"
-      COMMAND "${CMAKE_COMMAND}"
-              "-DTETGEN=$<TARGET_FILE:tetgen>"
-              "-DFLAGS=${TETGEN_TEST_FLAGS}"
-              "-DINPUT=${_input}"
-              "-DLOGFILE=${TETGEN_LOG_DIR}/${_basename}.log"
-              -P "${_test_wrapper}"
-      WORKING_DIRECTORY "${TESTFILES_DIR}"
-    )
+  foreach(_entry IN LISTS TETGEN_TESTS)
+    # Each entry is "inputfile;flags1;flags2;..."  — a CMake list.
+    # The first element is the input file, the rest are flag sets.
+    list(GET _entry 0 _input_file)
+    list(REMOVE_AT _entry 0)
+    # _entry now contains only the flag sets
 
-    # The CMake wrapper prints TETGEN_TEST_SKIPPED for known harmless
-    # return codes (3, 4, 5, 10).  CTest matches this marker and marks
-    # the test as skipped instead of failed.
-    set_tests_properties("${_test_name}" PROPERTIES
-      SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
-      TIMEOUT                 30
-    )
+    set(_full_path "${TESTFILES_DIR}/${_input_file}")
+    if(NOT EXISTS "${_full_path}")
+      message(WARNING "Test file listed but not found: ${_full_path}")
+    endif()
 
-    # Add a label based on the file extension for filtering, e.g.:
-    #   ctest -L smesh
-    #   ctest -L poly
-    get_filename_component(_ext "${_input}" LAST_EXT)
+    # File extension label for ctest -L filtering
+    get_filename_component(_ext "${_input_file}" LAST_EXT)
     string(SUBSTRING "${_ext}" 1 -1 _ext_label)  # strip leading dot
-    set_tests_properties("${_test_name}" PROPERTIES
-      LABELS "${_ext_label}"
-    )
+
+    foreach(_flags IN LISTS _entry)
+      # Build a unique test name: tetgen/<inputfile>/<flags>
+      # e.g. tetgen/smesh/Cow_cut.smesh/-pqQ
+      set(_test_name "tetgen/${_input_file}/${_flags}")
+
+      # Log file: flatten subdirectory separators and strip dashes from flags
+      string(REPLACE "/" "_" _file_id "${_input_file}")
+      string(REPLACE "-" "" _flags_id "${_flags}")
+      set(_logfile "${TETGEN_LOG_DIR}/${_file_id}_${_flags_id}.log")
+
+      add_test(
+        NAME    "${_test_name}"
+        COMMAND "${CMAKE_COMMAND}"
+                "-DTETGEN=$<TARGET_FILE:tetgen>"
+                "-DFLAGS=${_flags}"
+                "-DINPUT=${_full_path}"
+                "-DLOGFILE=${_logfile}"
+                -P "${_test_wrapper}"
+        WORKING_DIRECTORY "${TESTFILES_DIR}"
+      )
+
+      # The CMake wrapper prints TETGEN_TEST_SKIPPED for known harmless
+      # return codes (3, 4, 5, 10).  CTest matches this marker and marks
+      # the test as skipped instead of failed.
+      set_tests_properties("${_test_name}" PROPERTIES
+        SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
+        TIMEOUT                 30
+        LABELS                  "${_ext_label}"
+      )
+
+      math(EXPR _num_tests "${_num_tests} + 1")
+    endforeach()
   endforeach()
 
-  list(LENGTH _test_inputs _num_tests)
   message(STATUS "Registered ${_num_tests} TetGen test(s) from ${TESTFILES_DIR}")
 
 else()

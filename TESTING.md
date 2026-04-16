@@ -42,28 +42,40 @@ The test files repository is **shallow-cloned** (`--depth 1`) into
 |---|---|---|
 | `BUILD_TESTING` | `ON` | Master switch for CTest (standard CMake variable) |
 | `TESTFILES_REPO` | *(empty)* | URL or local path to the test-file Git repository |
-| `TETGEN_TEST_FLAGS` | `-pqQ` | Command-line flags passed to TetGen for every test |
-
-Example with custom flags:
-
-```bash
-cmake -B <build-dir> \
-  -DTESTFILES_REPO=https://codeberg.org/user/tetgen-testfiles.git \
-  -DTETGEN_TEST_FLAGS="-pq1.2Q"
-```
 
 ## Test Discovery
 
-CTest automatically discovers and registers all `*.smesh`, `*.poly`, and
-`*.mesh` files in the cloned test-file repository. Each file becomes a separate
-test named `tetgen/<filename>`, for example:
+Tests are registered from the explicit list in
+[`cmake/TetGenTestFiles.cmake`](cmake/TetGenTestFiles.cmake). Each entry in the
+`TETGEN_TESTS` variable has the form:
+
+```cmake
+"inputfile;flags1;flags2;..."
+```
+
+where `inputfile` is a basename relative to the cloned test-file repository and
+`flags1`, `flags2`, … are one or more TetGen flag strings. A **separate CTest
+test** is created for every (inputfile, flags) combination, named
+`tetgen/<filename>/<flags>`, for example:
 
 ```
-tetgen/Cow_cut.smesh
-tetgen/anc101.smesh
-tetgen/blade-surface-in.poly
-tetgen/monster4a.mesh
+tetgen/Cow_cut.smesh/-pqQ
+tetgen/anc101.smesh/-pqQ
+tetgen/blade-surface-in.poly/-pq1.2
 ```
+
+The default flag set `TETGEN_DEFAULT_FLAGS` is defined at the top of
+`TetGenTestFiles.cmake` and can be referenced with `${TETGEN_DEFAULT_FLAGS}` in
+entries.  To test a file with multiple flag sets, add several flags to the
+entry:
+
+```cmake
+"Cow_cut.smesh;-pqQ;-pq1.2;-pqO"
+```
+
+To **add or remove tests**, edit `cmake/TetGenTestFiles.cmake`. At configure
+time, CMake warns about any listed file that is not found in the cloned
+repository.
 
 > **Note:** `.node` files are companion data for `.smesh` and `.poly` inputs.
 > They are not tested independently.

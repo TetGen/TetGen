@@ -94,11 +94,13 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   set(_num_tests 0)
 
   foreach(_entry IN LISTS TETGEN_TESTS)
-    # Each entry is "inputfile;flags1;flags2;..."  — a CMake list.
-    # The first element is the input file, the rest are flag sets.
-    list(GET _entry 0 _input_file)
-    list(REMOVE_AT _entry 0)
-    # _entry now contains only the flag sets
+    # Each entry is "inputfile|flags1|flags2|..." using '|' as separator
+    # (';' would be swallowed by CMake's list semantics).
+    # Convert to a proper CMake list, then split.
+    string(REPLACE "|" ";" _entry_list "${_entry}")
+    list(GET _entry_list 0 _input_file)
+    list(REMOVE_AT _entry_list 0)
+    # _entry_list now contains only the flag sets
 
     set(_full_path "${TESTFILES_DIR}/${_input_file}")
     if(NOT EXISTS "${_full_path}")
@@ -109,7 +111,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
     get_filename_component(_ext "${_input_file}" LAST_EXT)
     string(SUBSTRING "${_ext}" 1 -1 _ext_label)  # strip leading dot
 
-    foreach(_flags IN LISTS _entry)
+    foreach(_flags IN LISTS _entry_list)
       # Build a unique test name: tetgen/<inputfile>/<flags>
       # e.g. tetgen/smesh/Cow_cut.smesh/-pqQ
       set(_test_name "tetgen/${_input_file}/${_flags}")

@@ -14,8 +14,8 @@ identify regressions and track results in a dashboard.
 ## Quick Start
 
 ```bash
-# Configure — point TESTFILES_REPO to the test-file repository
-cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+# Configure (uses the default test-file repository)
+cmake -B <build-dir>
 
 # Build
 cmake --build <build-dir>
@@ -28,9 +28,17 @@ Replace `<build-dir>` with a build directory of your choice (e.g. `build`,
 `out/debug`, etc.). All subsequent commands in this document use the same
 placeholder — substitute your chosen directory throughout.
 
-Replace `<url_or_path>` with either:
+By default, `TESTFILES_REPO` points to
+`https://codeberg.org/TetGen/TetGenTests.git`. To override, pass a different
+URL or local path:
 
-- a **remote URL**, e.g. `https://codeberg.org/user/tetgen-testfiles.git`
+```bash
+cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+```
+
+The value can be:
+
+- a **remote URL**, e.g. `https://codeberg.org/TetGen/TetGenTests.git`
 - a **local path** to a bare or regular Git repository
 
 The test files repository is **shallow-cloned** (`--depth 1`) into
@@ -41,27 +49,29 @@ The test files repository is **shallow-cloned** (`--depth 1`) into
 | Variable | Default | Description |
 |---|---|---|
 | `BUILD_TESTING` | `ON` | Master switch for CTest (standard CMake variable) |
-| `TESTFILES_REPO` | *(empty)* | URL or local path to the test-file Git repository |
+| `TESTFILES_REPO` | `https://codeberg.org/TetGen/TetGenTests.git` | URL or local path to the test-file Git repository |
 
 ## Test Discovery
 
-Tests are registered from the explicit list in
-[`cmake/TetGenTestFiles.cmake`](cmake/TetGenTestFiles.cmake). Each entry in the
-`TETGEN_TESTS` variable has the form:
+Tests are registered from the explicit list in `TetGenTestFiles.cmake` **inside
+the cloned test-file repository** (`<build-dir>/testfiles/TetGenTestFiles.cmake`).
+Each entry in the `TETGEN_TESTS` variable has the form:
 
 ```cmake
-"inputfile;flags1;flags2;..."
+"inputfile|flags1|flags2|..."
 ```
 
-where `inputfile` is a basename relative to the cloned test-file repository and
-`flags1`, `flags2`, … are one or more TetGen flag strings. A **separate CTest
-test** is created for every (inputfile, flags) combination, named
-`tetgen/<filename>/<flags>`, for example:
+where `inputfile` is a path relative to the test-file repository root (may
+include subdirectories, e.g. `smesh/foo.smesh`), and `flags1`, `flags2`, … are
+one or more TetGen flag strings. The pipe character `|` is used as separator
+because semicolons are interpreted as list separators by CMake. A **separate
+CTest test** is created for every (inputfile, flags) combination, named
+`tetgen/<inputfile>/<flags>`, for example:
 
 ```
-tetgen/Cow_cut.smesh/-pqQ
-tetgen/anc101.smesh/-pqQ
-tetgen/blade-surface-in.poly/-pq1.2
+tetgen/smesh/slit-1.smesh/-pQ
+tetgen/smesh/stanfordbunny.smesh/-pqQ
+tetgen/smesh/wedge-5.smesh/-pQ
 ```
 
 The default flag set `TETGEN_DEFAULT_FLAGS` is defined at the top of
@@ -70,12 +80,12 @@ entries.  To test a file with multiple flag sets, add several flags to the
 entry:
 
 ```cmake
-"Cow_cut.smesh;-pqQ;-pq1.2;-pqO"
+"smesh/Cow_cut.smesh|-pqQ|-pq1.2|-pqO"
 ```
 
-To **add or remove tests**, edit `cmake/TetGenTestFiles.cmake`. At configure
-time, CMake warns about any listed file that is not found in the cloned
-repository.
+To **add or remove tests**, edit `TetGenTestFiles.cmake` in the test-file
+repository. At configure time, CMake warns about any listed file that is not
+found in the cloned repository.
 
 > **Note:** `.node` files are companion data for `.smesh` and `.poly` inputs.
 > They are not tested independently.
@@ -129,13 +139,15 @@ ctest --test-dir <build-dir> -j4               # run up to 4 tests in parallel
 Every test run writes a per-test log file to:
 
 ```
-<build-dir>/Testing/Logs/<inputfile>.log
+<build-dir>/Testing/Logs/<flattened_file>_<stripped_flags>.log
 ```
 
-For example, running `tetgen/Cow_cut.smesh` produces:
+The file name is constructed by replacing `/` with `_` in the input path and
+stripping `-` from the flags. For example, running
+`tetgen/smesh/stanfordbunny.smesh/-pqQ` produces:
 
 ```
-<build-dir>/Testing/Logs/Cow_cut.smesh.log
+<build-dir>/Testing/Logs/smesh_stanfordbunny.smesh_pqQ.log
 ```
 
 Each log file contains:
@@ -227,7 +239,7 @@ steps:
     image: gcc
     commands:
       - apt-get update && apt-get install -y cmake git
-      - cmake -B build -DTESTFILES_REPO=https://codeberg.org/user/tetgen-testfiles.git
+      - cmake -B build
       - cmake --build build
       - ctest --test-dir build --output-on-failure
 ```
@@ -246,7 +258,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -B build -DTESTFILES_REPO=https://github.com/user/tetgen-testfiles.git
+        run: cmake -B build
       - name: Build
         run: cmake --build build
       - name: Test
@@ -266,6 +278,8 @@ TetGen/
 ├── predicates.cxx              # Geometric predicates
 └── <build-dir>/                # Build directory (user-chosen, e.g. build/)
     ├── testfiles/              # Shallow clone of test-file repo (generated)
+    │   ├── TetGenTestFiles.cmake  # Authoritative test list (from test repo)
+    │   └── smesh/              # Test input files
     └── Testing/
         └── Logs/               # Per-test log files (generated)
 ```

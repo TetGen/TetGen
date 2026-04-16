@@ -90,7 +90,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   endif()
 
   if(NOT TETGEN_TESTS)
-    message(WARNING "No test entries listed in cmake/TetGenTestFiles.cmake")
+    message(WARNING "No test entries listed in TetGenTestFiles.cmake")
   endif()
 
   # Path to the pure-CMake test wrapper script (no shell dependency)

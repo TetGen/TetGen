@@ -29,11 +29,11 @@ Replace `<build-dir>` with a build directory of your choice (e.g. `build`,
 placeholder — substitute your chosen directory throughout.
 
 By default, `TESTFILES_REPO` points to
-`https://codeberg.org/TetGen/TetGenTests.git`. To override, pass a different
+`https://codeberg.org/TetGen/TetGenTests.git`, and `TESTFILES_BRANCH` points to `main`. To override, pass a different
 URL or local path:
 
 ```bash
-cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path> -DTESTFILES_BRANCH=<branchname>
 ```
 
 The value can be:
@@ -41,7 +41,7 @@ The value can be:
 - a **remote URL**, e.g. `https://codeberg.org/TetGen/TetGenTests.git`
 - a **local path** to a bare or regular Git repository
 
-The test files repository is **shallow-cloned** (`--depth 1`) into
+The test files repository is **shallow-cloned** (`--single-branch --depth 1`) into
 `<build-dir>/testfiles/` at configure time. Only committed files are picked up.
 
 ## CMake Options

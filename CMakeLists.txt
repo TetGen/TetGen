@@ -26,7 +26,7 @@ set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
 #
 # Usage:
 #
-#   cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+#   cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path> -DTESTFILES_BRANCH=<branchname>
 #   cmake --build <build-dir>
 #   ctest --test-dir <build-dir> --output-on-failure
 #
@@ -52,6 +52,9 @@ include(CTest)
 set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
   "URL or local path to the Git repository containing TetGen test files")
 
+set(TESTFILES_BRANCH "main" CACHE STRING
+  "Branch of the Git repository containing TetGen test files")
+
 # --- Fetch test files and register tests ------------------------------------
 
 if(BUILD_TESTING AND TESTFILES_REPO)
@@ -60,9 +63,9 @@ if(BUILD_TESTING AND TESTFILES_REPO)
 
   # Shallow-clone the testfiles repository at configure time (once).
   if(NOT EXISTS "${TESTFILES_DIR}/.git")
-    message(STATUS "Cloning testfiles repository: ${TESTFILES_REPO}")
+    message(STATUS "Cloning testfiles repository: ${TESTFILES_REPO}@${TESTFILES_BRANCH}")
     execute_process(
-      COMMAND git clone --depth 1 "${TESTFILES_REPO}" "${TESTFILES_DIR}"
+      COMMAND git clone --depth 1 --single-branch --branch "${TESTFILES_BRANCH}" "${TESTFILES_REPO}" "${TESTFILES_DIR}"
       RESULT_VARIABLE _git_result
       OUTPUT_VARIABLE _git_output
       ERROR_VARIABLE  _git_error
@@ -90,7 +93,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   endif()
 
   if(NOT TETGEN_TESTS)
-    message(WARNING "No test entries listed in cmake/TetGenTestFiles.cmake")
+    message(WARNING "No test entries listed in TetGenTestFiles.cmake")
   endif()
 
   # Path to the pure-CMake test wrapper script (no shell dependency)

@@ -4703,6 +4703,107 @@ REAL orient4d(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
 
 
 
+//==============================================================================
+
+static REAL det3x3(REAL adx, REAL ady, REAL adz,
+                   REAL bdx, REAL bdy, REAL bdz,
+                   REAL cdx, REAL cdy, REAL cdz)
+{
+  return adx * (bdy * cdz - bdz * cdy)
+       + bdx * (cdy * adz - cdz * ady)
+       + cdx * (ady * bdz - adz * bdy);
+}
+
+void tetgenmesh::pre_calculate_insphere(point pa, point pb, point pc, point pd,
+                                        REAL* dets)
+{
+  if (pd != dummypoint) {
+    REAL ba_x = pb[0] - pa[0];
+    REAL ba_y = pb[1] - pa[1];
+    REAL ba_z = pb[2] - pa[2];
+    REAL ba_norm = ba_x*ba_x + ba_y*ba_y + ba_z*ba_z;
+    
+    REAL ca_x = pc[0] - pa[0];
+    REAL ca_y = pc[1] - pa[1];
+    REAL ca_z = pc[2] - pa[2];
+    REAL ca_norm = ca_x*ca_x + ca_y*ca_y + ca_z*ca_z;
+    
+    REAL da_x = pd[0] - pa[0];
+    REAL da_y = pd[1] - pa[1];
+    REAL da_z = pd[2] - pa[2];
+    REAL da_norm = da_x*da_x + da_y*da_y + da_z*da_z;
+
+    dets[0] = det3x3(ba_y, ba_z, ba_norm,
+                     ca_y, ca_z, ca_norm,
+                     da_y, da_z, da_norm);
+    
+    dets[1] = det3x3(ba_x, ba_z, ba_norm,
+                     ca_x, ca_z, ca_norm,
+                     da_x, da_z, da_norm);
+
+    dets[2] = det3x3(ba_x, ba_y, ba_norm,
+                     ca_x, ca_y, ca_norm,
+                     da_x, da_y, da_norm);
+    
+    dets[3] = det3x3(ba_x, ba_y, ba_z,
+                     ca_x, ca_y, ca_z,
+                     da_x, da_y, da_z);
+  } else {
+    double ab[4],ac[4];
+    double* a = pa; // mesh->vertices[Node[0]].coord;
+    double* b = pb; //mesh->vertices[Node[1]].coord;
+    double* c = pc; //mesh->vertices[Node[2]].coord;
+    unsigned i;
+    for (i=0; i<3; i++)
+    {
+      ab[i]=b[i]-a[i]; //AB
+      ac[i]=c[i]-a[i]; //AC
+    }
+    dets[0] = ac[1]*ab[2] - ac[2]*ab[1];
+    dets[1] = ac[2]*ab[0] - ac[0]*ab[2];
+    dets[2] = ac[0]*ab[1] - ac[1]*ab[0];
+    dets[3] = dets[0]*dets[0] + dets[1]*dets[1] + dets[2]*dets[2];
+  }
+}
+
+REAL tetgenmesh::insphere_use_subdets(tetrahedron *tet, REAL* pe)
+{
+  REAL *dets = get_polar(tet);
+
+  if (dets[3] == 0) { // Only calculate once.
+    point *pts = (point *) tet;
+    pre_calculate_insphere(pts[4], pts[5], pts[6], pts[7], dets);
+  }
+
+  point pa = (point) tet[4];
+  
+  if (((point) tet[7]) == dummypoint) {
+    double aex = pe[0] - pa[0];
+    double aey = pe[1] - pa[1];
+    double aez = pe[2] - pa[2];
+    double det = aex*dets[0]+aey*dets[1]+aez*dets[2];
+    if(fabs(det) > o3dstaticfilter) return det;
+    point *pts = (point *) tet;
+    det = orient3d(pts[4],pts[4],pts[6],pe);
+    return det;
+  }
+  
+  REAL ea_x = pe[0] - pa[0];
+  REAL ea_y = pe[1] - pa[1];
+  REAL ea_z = pe[2] - pa[2];
+  REAL ea_norm = ea_x * ea_x + ea_y * ea_y + ea_z * ea_z;
+
+  REAL det = -ea_x * dets[0]
+           +  ea_y * dets[1]
+           -  ea_z * dets[2]
+           +  ea_norm * dets[3];
+
+  if (fabs(det) < ispstaticfilter) {
+    point *pts = (point *) tet;
+    det = insphere_s(pts[4], pts[5], pts[6], pts[7], pe);
+  }
+  return det;
+}
 
 
 //==============================================================================

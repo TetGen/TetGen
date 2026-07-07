@@ -1,8 +1,0 @@
-# This file exports the TetGen::TetGen CMake target which should be passed to the
-# target_link_libraries command.
-
-@PACKAGE_INIT@
-
-if(NOT TARGET TetGen::TetGen)
-  include("${CMAKE_CURRENT_LIST_DIR}/TetGenTargets.cmake")
-endif()

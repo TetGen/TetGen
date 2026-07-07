@@ -13,9 +13,11 @@ identify regressions and track results in a dashboard.
 
 ## Quick Start
 
+Testing is **disabled by default**. To enable it, pass the `-DTETGEN_ENABLE_TESTING=ON` flag to CMake:
+
 ```bash
-# Configure (uses the default test-file repository)
-cmake -B <build-dir>
+# Configure (enables testing and uses the default test-file repository)
+cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON
 
 # Build
 cmake --build <build-dir>
@@ -27,12 +29,21 @@ ctest --test-dir <build-dir> --output-on-failure
 Replace `<build-dir>` with a build directory of your choice (e.g. `build`).
 All subsequent commands in this document use the same placeholder — substitute your chosen directory throughout.
 
+Without `-DTETGEN_ENABLE_TESTING=ON`, the build completes normally but no tests are registered.
+
 By default, `TESTFILES_REPO` points to
 `https://codeberg.org/TetGen/TetGenTests.git`. To override, pass a different
-URL or local path:
+URL or local path (in addition to enabling testing):
 
 ```bash
-cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_REPO=<url_or_path>
+```
+
+Other useful options when enabling testing:
+
+```bash
+cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_BRANCH=<branch>
+cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTETGEN_TEST_TIMEOUT=<seconds>
 ```
 
 The value can be:
@@ -47,10 +58,11 @@ The test files repository is **shallow-cloned** (`--depth 1`) into
 
 | Variable | Default | Description |
 |---|---|---|
-| `BUILD_TESTING` | `ON` | Master switch for CTest (standard CMake variable) |
+| `TETGEN_ENABLE_TESTING` | `OFF` | Enable CTest testing infrastructure (must be set to `ON` to register tests) |
+| `BUILD_TESTING` | `ON` (when enabled) | Master switch for CTest (standard CMake variable; only used if `TETGEN_ENABLE_TESTING` is `ON`) |
 | `TESTFILES_REPO` | `https://codeberg.org/TetGen/TetGenTests.git` | URL or local path to the test-file Git repository |
-| `TESTFILES_BRANCH` | `main` | Branch in test files repo to be used|
-| `TETGEN_TEST_TIMEOUT | 60 | timeout for each test|
+| `TESTFILES_BRANCH` | `main` | Branch in test files repo to be used |
+| `TETGEN_TEST_TIMEOUT` | `60` | Timeout for each test in seconds |
 
 ## Test Discovery
 
@@ -93,10 +105,12 @@ To **add or remove tests**, edit `cmake/TetGenTestFiles.cmake`.
 ctest --test-dir <build-dir> --output-on-failure
 ```
 
+> **Note:** Tests must be enabled with `-DTETGEN_ENABLE_TESTING=ON` during configure to be available.
+
 To **re-run tests** after editing  `cmake/TetGenTestFiles.cmake`, perform
 
 ```bash
-cmake -B <build-dir>
+cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON
 ctest --test-dir <build-dir> --output-on-failure
 ```
 
@@ -241,7 +255,7 @@ steps:
     image: gcc
     commands:
       - apt-get update && apt-get install -y cmake git
-      - cmake -B build
+      - cmake -B build -DTETGEN_ENABLE_TESTING=ON
       - cmake --build build
       - ctest --test-dir build --output-on-failure
 ```
@@ -260,7 +274,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -B build
+        run: cmake -B build -DTETGEN_ENABLE_TESTING=ON
       - name: Build
         run: cmake --build build
       - name: Test
@@ -274,14 +288,14 @@ TetGen/
 ├── CMakeLists.txt              # Build + CTest configuration
 ├── runtest.sh                  # Standalone batch test script (no CMake needed)
 ├── cmake/
+│   ├── TetGenConfig.cmake.in   # CMake package config template
+│   ├── TetGenTestFiles.cmake   # Authoritative test list (from test repo)
 │   └── run_tetgen_test.cmake   # Test wrapper (return code dispatch + logging)
 ├── tetgen.cxx                  # TetGen source
 ├── tetgen.h                    # TetGen header
 ├── predicates.cxx              # Geometric predicates
 └── <build-dir>/                # Build directory (user-chosen, e.g. build/)
-    ├── testfiles/              # Shallow clone of test-file repo (generated)
-    │   ├── TetGenTestFiles.cmake  # Authoritative test list (from test repo)
-    │   └── smesh/              # Test input files
+    ├── testfiles/              # Shallow clone of test-file repo (generated, if testing enabled)
     └── Testing/
-        └── Logs/               # Per-test log files (generated)
+        └── Logs/               # Per-test log files (generated, if testing enabled)
 ```

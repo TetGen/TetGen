@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -B build
+        run: cmake -B build -DTETGEN_ENABLE_TESTING=ON
       - name: Build
         run: cmake --build build
       - name: Test

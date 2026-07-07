@@ -39,7 +39,7 @@ install(EXPORT TetGenTargets
 )
 
 configure_package_config_file (
-    ${CMAKE_CURRENT_SOURCE_DIR}/CMake/TetGenConfig.cmake.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/TetGenConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake
     INSTALL_DESTINATION lib/cmake/tetgen
     NO_SET_AND_CHECK_MACRO # No legacy style defines
@@ -57,16 +57,19 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION 
 
 
 ###############################################################################
-# Testing infrastructure using CTest
+# Testing infrastructure using CTest (optional)
 # SPDX-License-Identifier: AGPL-3.0-or-later OR MIT
 # Copyright (c) 2025 Jürgen Fuhrmann
 ###############################################################################
 #
+# To enable testing, pass -DTETGEN_ENABLE_TESTING=ON to cmake.
+#
 # Usage:
 #
-#   cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
-#   cmake -B <build-dir> -DTESTFILES_BRANCH=<branch>
-#   cmake -B <build-dir> -DTETGEN_TEST_TIMEOUT=<seconds>
+#   cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON
+#   cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_REPO=<url_or_path>
+#   cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_BRANCH=<branch>
+#   cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTETGEN_TEST_TIMEOUT=<seconds>
 #   cmake --build <build-dir>
 #   ctest --test-dir <build-dir> --output-on-failure
 #
@@ -85,130 +88,136 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION 
 # Per-test log files are written to <build-dir>/Testing/Logs/<inputfile>_<flags>.log
 #
 
-include(CTest)
+option(TETGEN_ENABLE_TESTING "Enable CTest testing for TetGen" OFF)
+
+if(TETGEN_ENABLE_TESTING)
+  include(CTest)
+endif()
 
 # --- Configurable options ---------------------------------------------------
 
-set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
-  "URL or local path to the Git repository containing TetGen test files")
+if(TETGEN_ENABLE_TESTING)
+  set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
+    "URL or local path to the Git repository containing TetGen test files")
 
-set(TESTFILES_BRANCH "main" CACHE STRING
-  "Branch of the TESTFILES_REPO repository to clone")
+  set(TESTFILES_BRANCH "main" CACHE STRING
+    "Branch of the TESTFILES_REPO repository to clone")
 
-set(TETGEN_TEST_TIMEOUT 60 CACHE STRING
-  "CTest timeout in seconds for each TetGen test")
+  set(TETGEN_TEST_TIMEOUT 60 CACHE STRING
+    "CTest timeout in seconds for each TetGen test")
 
-# --- Fetch test files and register tests ------------------------------------
+  # --- Fetch test files and register tests ------------------------------------
 
-if(BUILD_TESTING AND TESTFILES_REPO)
+  if(BUILD_TESTING AND TESTFILES_REPO)
 
-  set(TESTFILES_DIR "${CMAKE_BINARY_DIR}/testfiles")
+    set(TESTFILES_DIR "${CMAKE_BINARY_DIR}/testfiles")
 
-  # Shallow-clone the testfiles repository at configure time (once).
-  if(NOT EXISTS "${TESTFILES_DIR}/.git")
-    message(STATUS
-      "Cloning testfiles repository: ${TESTFILES_REPO} (branch: ${TESTFILES_BRANCH})"
-    )
-    execute_process(
-      COMMAND git clone --depth 1 --single-branch --branch "${TESTFILES_BRANCH}" "${TESTFILES_REPO}" "${TESTFILES_DIR}"
-      RESULT_VARIABLE _git_result
-      OUTPUT_VARIABLE _git_output
-      ERROR_VARIABLE  _git_error
-    )
-    if(NOT _git_result EQUAL 0)
+    # Shallow-clone the testfiles repository at configure time (once).
+    if(NOT EXISTS "${TESTFILES_DIR}/.git")
+      message(STATUS
+        "Cloning testfiles repository: ${TESTFILES_REPO} (branch: ${TESTFILES_BRANCH})"
+      )
+      execute_process(
+        COMMAND git clone --depth 1 --single-branch --branch "${TESTFILES_BRANCH}" "${TESTFILES_REPO}" "${TESTFILES_DIR}"
+        RESULT_VARIABLE _git_result
+        OUTPUT_VARIABLE _git_output
+        ERROR_VARIABLE  _git_error
+      )
+      if(NOT _git_result EQUAL 0)
+        message(WARNING
+          "Failed to clone testfiles repository (exit code ${_git_result}):\n"
+          "${_git_error}\n"
+          "Testing will be disabled."
+        )
+      endif()
+    endif()
+
+    # Load the explicit list of test entries (file + per-file flags)
+    # from the testfiles repository.  Edit TetGenTestFiles.cmake there
+    # to add, remove, or change tests.
+    set(_test_list "${CMAKE_SOURCE_DIR}/cmake/TetGenTestFiles.cmake")
+    if(NOT EXISTS "${_test_list}")
       message(WARNING
-        "Failed to clone testfiles repository (exit code ${_git_result}):\n"
-        "${_git_error}\n"
-        "Testing will be disabled."
+        "TetGenTestFiles.cmake not found in ${TESTFILES_DIR}. "
+        "No tests will be registered."
       )
-    endif()
-  endif()
-
-  # Load the explicit list of test entries (file + per-file flags)
-  # from the testfiles repository.  Edit TetGenTestFiles.cmake there
-  # to add, remove, or change tests.
-  set(_test_list "${CMAKE_SOURCE_DIR}/cmake/TetGenTestFiles.cmake")
-  if(NOT EXISTS "${_test_list}")
-    message(WARNING
-      "TetGenTestFiles.cmake not found in ${TESTFILES_DIR}. "
-      "No tests will be registered."
-    )
-  else()
-    include("${_test_list}")
-  endif()
-
-  if(NOT TETGEN_TESTS)
-    message(WARNING "No test entries listed in TetGenTestFiles.cmake")
-  endif()
-
-  # Path to the pure-CMake test wrapper script (no shell dependency)
-  set(_test_wrapper "${CMAKE_SOURCE_DIR}/cmake/run_tetgen_test.cmake")
-
-  # Directory for per-test log files
-  set(TETGEN_LOG_DIR "${CMAKE_BINARY_DIR}/Testing/Logs")
-  file(MAKE_DIRECTORY "${TETGEN_LOG_DIR}")
-
-  set(_num_tests 0)
-
-  foreach(_entry IN LISTS TETGEN_TESTS)
-    # Each entry is "inputfile|flags1|flags2|..." using '|' as separator
-    # (';' would be swallowed by CMake's list semantics).
-    # Convert to a proper CMake list, then split.
-    string(REPLACE "|" ";" _entry_list "${_entry}")
-    list(GET _entry_list 0 _input_file)
-    list(REMOVE_AT _entry_list 0)
-    # _entry_list now contains only the flag sets
-
-    set(_full_path "${TESTFILES_DIR}/${_input_file}")
-    if(NOT EXISTS "${_full_path}")
-      message(WARNING "Test file listed but not found: ${_full_path}")
+    else()
+      include("${_test_list}")
     endif()
 
-    # File extension label for ctest -L filtering
-    get_filename_component(_ext "${_input_file}" LAST_EXT)
-    string(SUBSTRING "${_ext}" 1 -1 _ext_label)  # strip leading dot
+    if(NOT TETGEN_TESTS)
+      message(WARNING "No test entries listed in TetGenTestFiles.cmake")
+    endif()
 
-    foreach(_flags IN LISTS _entry_list)
-      # Build a unique test name: tetgen/<inputfile>/<flags>
-      # e.g. tetgen/smesh/Cow_cut.smesh/-pqQ
-      set(_test_name "tetgen/${_input_file}/${_flags}")
+    # Path to the pure-CMake test wrapper script (no shell dependency)
+    set(_test_wrapper "${CMAKE_SOURCE_DIR}/cmake/run_tetgen_test.cmake")
 
-      # Log file: flatten subdirectory separators and strip dashes from flags
-      string(REPLACE "/" "_" _file_id "${_input_file}")
-      string(REPLACE "-" "" _flags_id "${_flags}")
-      set(_logfile "${TETGEN_LOG_DIR}/${_file_id}_${_flags_id}.log")
+    # Directory for per-test log files
+    set(TETGEN_LOG_DIR "${CMAKE_BINARY_DIR}/Testing/Logs")
+    file(MAKE_DIRECTORY "${TETGEN_LOG_DIR}")
 
-      add_test(
-        NAME    "${_test_name}"
-        COMMAND "${CMAKE_COMMAND}"
-                "-DTETGEN=$<TARGET_FILE:tetgen>"
-                "-DFLAGS=${_flags}"
-                "-DINPUT=${_full_path}"
-                "-DLOGFILE=${_logfile}"
-                -P "${_test_wrapper}"
-        WORKING_DIRECTORY "${TESTFILES_DIR}"
-      )
+    set(_num_tests 0)
 
-      # The CMake wrapper prints TETGEN_TEST_SKIPPED for known harmless
-      # return codes (3, 4, 5, 10).  CTest matches this marker and marks
-      # the test as skipped instead of failed.
-      set_tests_properties("${_test_name}" PROPERTIES
-        SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
-        TIMEOUT                 "${TETGEN_TEST_TIMEOUT}"
-        LABELS                  "${_ext_label}"
-      )
+    foreach(_entry IN LISTS TETGEN_TESTS)
+      # Each entry is "inputfile|flags1|flags2|..." using '|' as separator
+      # (';' would be swallowed by CMake's list semantics).
+      # Convert to a proper CMake list, then split.
+      string(REPLACE "|" ";" _entry_list "${_entry}")
+      list(GET _entry_list 0 _input_file)
+      list(REMOVE_AT _entry_list 0)
+      # _entry_list now contains only the flag sets
 
-      math(EXPR _num_tests "${_num_tests} + 1")
+      set(_full_path "${TESTFILES_DIR}/${_input_file}")
+      if(NOT EXISTS "${_full_path}")
+        message(WARNING "Test file listed but not found: ${_full_path}")
+      endif()
+
+      # File extension label for ctest -L filtering
+      get_filename_component(_ext "${_input_file}" LAST_EXT)
+      string(SUBSTRING "${_ext}" 1 -1 _ext_label)  # strip leading dot
+
+      foreach(_flags IN LISTS _entry_list)
+        # Build a unique test name: tetgen/<inputfile>/<flags>
+        # e.g. tetgen/smesh/Cow_cut.smesh/-pqQ
+        set(_test_name "tetgen/${_input_file}/${_flags}")
+
+        # Log file: flatten subdirectory separators and strip dashes from flags
+        string(REPLACE "/" "_" _file_id "${_input_file}")
+        string(REPLACE "-" "" _flags_id "${_flags}")
+        set(_logfile "${TETGEN_LOG_DIR}/${_file_id}_${_flags_id}.log")
+
+        add_test(
+          NAME    "${_test_name}"
+          COMMAND "${CMAKE_COMMAND}"
+                  "-DTETGEN=$<TARGET_FILE:tetgen>"
+                  "-DFLAGS=${_flags}"
+                  "-DINPUT=${_full_path}"
+                  "-DLOGFILE=${_logfile}"
+                  -P "${_test_wrapper}"
+          WORKING_DIRECTORY "${TESTFILES_DIR}"
+        )
+
+        # The CMake wrapper prints TETGEN_TEST_SKIPPED for known harmless
+        # return codes (3, 4, 5, 10).  CTest matches this marker and marks
+        # the test as skipped instead of failed.
+        set_tests_properties("${_test_name}" PROPERTIES
+          SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
+          TIMEOUT                 "${TETGEN_TEST_TIMEOUT}"
+          LABELS                  "${_ext_label}"
+        )
+
+        math(EXPR _num_tests "${_num_tests} + 1")
+      endforeach()
     endforeach()
-  endforeach()
 
-  message(STATUS "Registered ${_num_tests} TetGen test(s) from ${TESTFILES_DIR}")
+    message(STATUS "Registered ${_num_tests} TetGen test(s) from ${TESTFILES_DIR}")
 
-else()
-  if(BUILD_TESTING AND NOT TESTFILES_REPO)
-    message(STATUS
-      "Testing is enabled but TESTFILES_REPO is not set. "
-      "Set -DTESTFILES_REPO=<url_or_path> to enable TetGen tests."
-    )
+  else()
+    if(BUILD_TESTING AND NOT TESTFILES_REPO)
+      message(STATUS
+        "Testing is enabled but TESTFILES_REPO is not set. "
+        "Set -DTESTFILES_REPO=<url_or_path> to enable TetGen tests."
+      )
+    endif()
   endif()
 endif()

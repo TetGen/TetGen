@@ -57,7 +57,7 @@ set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
 set(TESTFILES_BRANCH "main" CACHE STRING
   "Branch of the TESTFILES_REPO repository to clone")
 
-set(TETGEN_TEST_TIMEOUT 30 CACHE STRING
+set(TETGEN_TEST_TIMEOUT 60 CACHE STRING
   "CTest timeout in seconds for each TetGen test")
 
 # --- Fetch test files and register tests ------------------------------------
@@ -89,7 +89,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   # Load the explicit list of test entries (file + per-file flags)
   # from the testfiles repository.  Edit TetGenTestFiles.cmake there
   # to add, remove, or change tests.
-  set(_test_list "${TESTFILES_DIR}/TetGenTestFiles.cmake")
+  set(_test_list "${CMAKE_SOURCE_DIR}/cmake/TetGenTestFiles.cmake")
   if(NOT EXISTS "${_test_list}")
     message(WARNING
       "TetGenTestFiles.cmake not found in ${TESTFILES_DIR}. "

@@ -9,7 +9,7 @@ project(TetGen
   LANGUAGES CXX
 )
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+include(GNUInstallDirs)
 
 # Add an executable to the project using the specified source files.
 add_executable(tetgen ${INC} ${SRC})
@@ -17,31 +17,43 @@ add_executable(tetgen ${INC} ${SRC})
 # Add a library to the project using the specified source files.
 # In Linux/Unix, it will create libtet.a
 add_library(tet STATIC tetgen.cxx predicates.cxx)
+add_library(TetGen::TetGen ALIAS tet)
+
+# Shewchuk's exact arithmetic predicates rely on strict floating-point
+# evaluation order. Compiler optimizations can reorder or fuse operations,
+# producing incorrect geometric results, so predicates.cxx must always be
+# built with optimizations disabled, for both targets.
+set_source_files_properties(predicates.cxx PROPERTIES COMPILE_OPTIONS "-O0")
 
 #Set properties on a target. 
 #We use this here to set -DTETLIBRARY for when compiling the
 #library
-target_include_directories(tet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>" "$<INSTALL_INTERFACE:include>")
-target_compile_definitions(tet PUBLIC TETLIBRARY)
-set_target_properties(tet PROPERTIES EXPORT_NAME TetGen)
+target_include_directories(tet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>" "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+target_compile_definitions(tet PRIVATE TETLIBRARY)
+set_target_properties(tet PROPERTIES
+    EXPORT_NAME TetGen
+    POSITION_INDEPENDENT_CODE ON
+)
 
-install(TARGETS tetgen RUNTIME DESTINATION bin)
-install(TARGETS tet LIBRARY DESTINATION lib)
-install(FILES tetgen.h DESTINATION include)
-install (FILES LICENSE DESTINATION share/tetgen)
+install(TARGETS tetgen RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES tetgen.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/tetgen)
 
-install(TARGETS tet EXPORT TetGenTargets)
+install(TARGETS tet
+    EXPORT TetGenTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 
 install(EXPORT TetGenTargets
     FILE TetGenTargets.cmake
     NAMESPACE TetGen::
-    DESTINATION lib/cmake/tetgen
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen
 )
 
 configure_package_config_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/TetGenConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake
-    INSTALL_DESTINATION lib/cmake/tetgen
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen
     NO_SET_AND_CHECK_MACRO # No legacy style defines
     NO_CHECK_REQUIRED_COMPONENTS_MACRO # No components
 )
@@ -52,8 +64,8 @@ write_basic_package_version_file(
     COMPATIBILITY SameMinorVersion
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake DESTINATION lib/cmake/tetgen)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION lib/cmake/tetgen)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen)
 
 
 ###############################################################################

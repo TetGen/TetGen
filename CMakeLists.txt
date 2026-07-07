@@ -89,7 +89,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
   # Load the explicit list of test entries (file + per-file flags)
   # from the testfiles repository.  Edit TetGenTestFiles.cmake there
   # to add, remove, or change tests.
-  set(_test_list "${TESTFILES_DIR}/TetGenTestFiles.cmake")
+  set(_test_list "${CMAKE_SOURCE_DIR}/cmake/TetGenTestFiles.cmake")
   if(NOT EXISTS "${_test_list}")
     message(WARNING
       "TetGenTestFiles.cmake not found in ${TESTFILES_DIR}. "

@@ -35,3 +35,5 @@ Details about the extension of this dual licensing scheme for future versions of
 
 By submitting a contribution (including but not limited to code, documentation, or other materials) via a pull request, issue, or other means, a contributor agrees to the terms of the contributor license agreement stated in [CONTRIBUTING.md](CONTRIBUTING.md). It is planned to revise this agreement, once the extension of the dual licensing scheme has been set up.
 
+## AI Disclaimer
+Claude (Anthropic) via github copilot has been used in order to set up the cmake based test environment. No AI editing was applied to the TetGen sources.

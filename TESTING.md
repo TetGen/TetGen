@@ -24,9 +24,8 @@ cmake --build <build-dir>
 ctest --test-dir <build-dir> --output-on-failure
 ```
 
-Replace `<build-dir>` with a build directory of your choice (e.g. `build`,
-`out/debug`, etc.). All subsequent commands in this document use the same
-placeholder — substitute your chosen directory throughout.
+Replace `<build-dir>` with a build directory of your choice (e.g. `build`).
+All subsequent commands in this document use the same placeholder — substitute your chosen directory throughout.
 
 By default, `TESTFILES_REPO` points to
 `https://codeberg.org/TetGen/TetGenTests.git`. To override, pass a different
@@ -50,11 +49,12 @@ The test files repository is **shallow-cloned** (`--depth 1`) into
 |---|---|---|
 | `BUILD_TESTING` | `ON` | Master switch for CTest (standard CMake variable) |
 | `TESTFILES_REPO` | `https://codeberg.org/TetGen/TetGenTests.git` | URL or local path to the test-file Git repository |
+| `TESTFILES_BRANCH` | `main` | Branch in test files repo to be used|
+| `TETGEN_TEST_TIMEOUT | 60 | timeout for each test|
 
 ## Test Discovery
 
-Tests are registered from the explicit list in `TetGenTestFiles.cmake` **inside
-the cloned test-file repository** (`<build-dir>/testfiles/TetGenTestFiles.cmake`).
+Tests are registered from the explicit list in `cmake/TetGenTestFiles.cmake`.
 Each entry in the `TETGEN_TESTS` variable has the form:
 
 ```cmake
@@ -69,23 +69,18 @@ CTest test** is created for every (inputfile, flags) combination, named
 `tetgen/<inputfile>/<flags>`, for example:
 
 ```
-tetgen/smesh/slit-1.smesh/-pQ
-tetgen/smesh/stanfordbunny.smesh/-pqQ
-tetgen/smesh/wedge-5.smesh/-pQ
+"tetgen/smesh/slit-1.smesh|-pQ|-pY"
+"tetgen/smesh/stanfordbunny.smesh|-pqQ"
+"tetgen/smesh/wedge-5.smesh|-pQ"
 ```
 
-The default flag set `TETGEN_DEFAULT_FLAGS` is defined at the top of
-`TetGenTestFiles.cmake` and can be referenced with `${TETGEN_DEFAULT_FLAGS}` in
-entries.  To test a file with multiple flag sets, add several flags to the
-entry:
+To test a file with multiple flag sets, add several flags to the entry:
 
 ```cmake
 "smesh/Cow_cut.smesh|-pqQ|-pq1.2|-pqO"
 ```
 
-To **add or remove tests**, edit `TetGenTestFiles.cmake` in the test-file
-repository. At configure time, CMake warns about any listed file that is not
-found in the cloned repository.
+To **add or remove tests**, edit `cmake/TetGenTestFiles.cmake`. 
 
 > **Note:** `.node` files are companion data for `.smesh` and `.poly` inputs.
 > They are not tested independently.
@@ -95,6 +90,13 @@ found in the cloned repository.
 ### Run all tests
 
 ```bash
+ctest --test-dir <build-dir> --output-on-failure
+```
+
+To **re-run tests** after editing  `cmake/TetGenTestFiles.cmake`, perform
+
+```bash
+cmake -B <build-dir>
 ctest --test-dir <build-dir> --output-on-failure
 ```
 

@@ -8,13 +8,10 @@
 // A Quality Tetrahedral Mesh Generator and A 3D Delaunay Triangulator        //
 //                                                                            //
 // Version 1.6.1                                                              //
-// xxx xx, 2025                                                               //
-//                                                                            //
-// Copyright (C) 2002--2025                                                   //
+// Copyright (C) 2002--2026                                                   //
 //                                                                            //
 // Hang Si                                                                    //
 // hangsi@dlut.edu.cn                                                         //
-// http://www.tetgen.org                                                      //
 // https://codeberg.org/TetGen/TetGen                                         //
 //                                                                            //
 // TetGen is a tetrahedral mesh generator. It creates 3d triangulations of    //
@@ -41,7 +38,7 @@
 //   Delaunay-Based Quality Tetrahedral Mesh Generator", ACM Transactions on  //
 //   Mathematical Software, February 2015, https://doi.org/10.1145/2629697.   //
 //                                                                            //
-// TetGen is freely available through the website: http://www.tetgen.org.     //
+// TetGen is freely available through: https://codeberg.org/TetGen/TetGen.    //
 //   It may be copied, modified, and redistributed for non-commercial use.    //
 //   Please consult the file LICENSE for the detailed copyright notices.      //
 //                                                                            //
@@ -80,21 +77,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <stdint.h>
 #include <vector>
 #include <iomanip>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-#ifdef USING_GMP
-#include <gmpxx.h>
-#endif
 
-// The types 'intptr_t' and 'uintptr_t' are signed and unsigned integer types,
-//   respectively. They are guaranteed to be the same width as a pointer.
-//   They are defined in <stdint.h> by the C99 Standard.
-
-#include <stdint.h>
 
 //============================================================================//
 //                                                                            //
@@ -851,7 +841,7 @@ public:
     refine_progress_ratio = 0.333; // -r/#
     object = NODES;
 
-    int convert_interior_subdomains_to_holes = 0; // -A2
+    convert_interior_subdomains_to_holes = 0; // -A2
 
     use_volume_size_map = 0; // -rS
     debug_out_Steiner_tags = 0; // -GN
@@ -871,7 +861,6 @@ public:
 
 }; // class tetgenbehavior
 
-#ifndef USING_GMP
 //============================================================================//
 //                                                                            //
 // Robust Geometric predicates                                                //
@@ -901,7 +890,6 @@ REAL orient3dexact(REAL *pa, REAL *pb, REAL *pc, REAL *pd);
 REAL orient4dexact(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
                    REAL ah, REAL bh, REAL ch, REAL dh, REAL eh);
 
-#endif
 
 //============================================================================//
 //                                                                            //
@@ -993,23 +981,7 @@ public:
   //   determined at the runtime.
 
   typedef REAL *point;
-  
-  // A compound point (which includes rational coordinates, etc)
-  class Cpoint { public:
-    REAL *pt;
-    char p[3][64];
-    char q[3][64];
-    Cpoint *next;
-    
-    void init() {
-      pt = nullptr;
-      p[0][0] = p[1][0] = p[2][0] = '\0';
-      q[0][0] = q[1][0] = q[2][0] = '\0';
-      next = nullptr;
-    }
-    
-    Cpoint() {init();}
-  };
+
 
 //============================================================================//
 //                                                                            //
@@ -1418,9 +1390,6 @@ public:
   //   segments) and extra pointers between tetrahedra, subfaces, and segments.
   memorypool *tetrahedrons, *subfaces, *subsegs, *points;
   memorypool *tet2subpool, *tet2segpool;
-  
-  // Memorypool to store compound points.
-  memorypool *Cpointpool;
 
   // Memorypools to store bad-quality (or encroached) elements.
   memorypool *badtetrahedrons, *badsubfacs, *badsubsegs;
@@ -1744,8 +1713,6 @@ public:
   inline void setpoint2sh(point pt, shellface value);
   inline point point2ppt(point pt);
   inline void setpoint2ppt(point pt, point value);
-  inline Cpoint* point2Cp(point pt);
-  inline void setpoint2Cp(point pt, Cpoint* value);
   inline tetrahedron point2bgmtet(point pt);
   inline void setpoint2bgmtet(point pt, tetrahedron value);
   inline void setpointinsradius(point pt, REAL value);
@@ -1800,46 +1767,6 @@ public:
 //                                                                            //
 //============================================================================//
 
-#ifdef USING_GMP
-  void print_mpq(mpq_class *pa); // debug
-  
-  std::pair<std::string, std::string> double_to_strs(double d, int precision = 15);
-  mpq_class double_to_mpq(double d, int precision = 15);
-  void store_mpq(Cpoint *cp, int i, std::pair<std::string, std::string>&);
-  void store_mpq(Cpoint *cp, int i, double d, int precision = 15);
-  void store_mpq(Cpoint *cp, int i, mpq_class *pa);
-  mpq_class restore_mpq(Cpoint *cp, int i);
-  
-  void clear_mpq_point(point pt); // Recycle the space of compound points.
-  void get_mpq_from_point(point pt, mpq_class *m_pt); // mpq_class m_pt[3], m_pt = pt
-  void set_mpq_to_point(mpq_class *m_pt, point pt); // mpq_class m_pt[3], pt = m_pt;
-  
-  void create_mpq_point(point pt, int precision = 15); // used in transfernodes()
-  void create_mpq_point(double *d, point pt, int precision = 15);
-  void get_d3_from_mpq3(mpq_class *m_pt, double *d); // d[] = m_pt[].get_d()
-  void get_mpq3_from_d3(double *d, mpq_class *m_pt); // m_pt[] = double_to_mpq(d[]).
-  
-  mpq_class orient2d_mpq(mpq_class *pa, mpq_class *pb, mpq_class *pc);
-  mpq_class orient3d_mpq(mpq_class *pa, mpq_class *pb, mpq_class *pc, mpq_class *pd);
-  mpq_class orient3d_mpq(point pa, point pb, point pc, point pd); // Delaunay
-  mpq_class orient3d(point pa, point pb, point pc, mpq_class *m_pd);
-  
-  mpq_class insphere_mpq(mpq_class *pa, mpq_class *pb, mpq_class *pc, mpq_class *pd, mpq_class *pe);
-  mpq_class insphere_mpq(point pa, point pb, point pc, point pd, point pe);
-  
-  mpq_class orient4d_mpq(mpq_class *pa, mpq_class *pb, mpq_class *pc, mpq_class *pd, mpq_class *pe, mpq_class &ah, mpq_class &bh, mpq_class &ch, mpq_class &dh, mpq_class &eh);
-  mpq_class orient4d_mpq(point pa, point pb, point pc, point pd, point pe,
-                         REAL ah, REAL bh, REAL ch, REAL dh, REAL eh);
-  
-  void facenormal_mpq(mpq_class *pa, mpq_class *pb, mpq_class *pc, mpq_class *n);
-  bool planelineint_mpq(mpq_class*, mpq_class*, mpq_class*, mpq_class*, mpq_class*, mpq_class*, mpq_class&);
-  void projpt2edge_mpq(mpq_class *p, mpq_class *e1, mpq_class *e2, mpq_class* prj);
-  void projpt2face_mpq(mpq_class *p, mpq_class *f1, mpq_class *f2, mpq_class *f3,
-                       mpq_class *prj);
-  
-  bool get_subface_ccent_mpq(face *chkfac, mpq_class *m_ccent);
-#endif
-  
   // Above/below plane predicate (robust)
   REAL orient3d(point pa, point pb, point pc, point pd);
   REAL orient4d(point pa, point pb, point pc, point pd, point pe,
@@ -2036,14 +1963,14 @@ public:
   void flip22(face*, int, int);
   void flip31(face*, int);
   long lawsonflip();
-  int sinsertvertex(point newpt, face*, face*, int iloc, int bowywat, int);
-  int sremovevertex(point delpt, face*, face*, int lawson);
+  int  sinsertvertex(point newpt, face*, face*, int iloc, int bowywat, int);
+  int  sremovevertex(point delpt, face*, face*, int lawson);
 
   enum locateresult slocate(point, face*, int, int, int);
   enum interresult sscoutsegment(face*, point, int, int, int);
   void scarveholes(int, REAL*);
-  int get_first_triangle(arraypool*, point*, point*, point*);
-  int triangulate(int, arraypool*, arraypool*, int, REAL*);
+  int  get_first_triangle(arraypool*, point*, point*, point*);
+  int  triangulate(int, arraypool*, arraypool*, int, REAL*);
 
   void unifysegments();
   void identifyinputedges(point*);
@@ -2159,8 +2086,8 @@ public:
   bool is_segment(point p1, point p2);
   bool valid_constrained_f23(triface& flipface, point pd, point pe, int f44);
   bool valid_constrained_f32(triface*, point pa, point pb);
-  int checkflipeligibility(int fliptype, point, point, point, point, point,
-                           int level, int edgepivot, flipconstraints* fc);
+  int  checkflipeligibility(int fliptype, point, point, point, point, point,
+                            int level, int edgepivot, flipconstraints* fc);
 
   int removeedgebyflips(triface*, flipconstraints*);
   int removefacebyflips(triface*, flipconstraints*);
@@ -2355,6 +2282,10 @@ public:
 //                                                                            //
 //============================================================================//
 
+  // array (size = numberoftetrahedra * 6) for storing high-order nodes of each
+  // tetrahedron
+  point *highordertable;
+
   void jettisonnodes();
   void highorder();
   void indexelements();
@@ -2404,8 +2335,6 @@ public:
     unsplit_badtets = unsplit_subfaces = unsplit_segments = NULL;
     check_tets_list = NULL;
     badqual_tets_pool = NULL;
-
-    Cpointpool = NULL;
     
     stack_enc_segments = stack_enc_subfaces = NULL;
   
@@ -2440,6 +2369,7 @@ public:
 
     subdomains = 0;
     subdomain_markers = NULL;
+    highordertable = NULL;
 
     numpointattrib = numelemattrib = 0;
     sizeoftensor = 0;
@@ -2595,10 +2525,11 @@ public:
     if (subdomain_markers != NULL) {
       delete [] subdomain_markers;
     }
-#ifdef USING_GMP
-    delete Cpointpool;
-#endif
-    
+
+    if (highordertable != NULL) {
+        delete[] highordertable;
+    }
+
     initializetetgenmesh();
   }
 
@@ -3629,13 +3560,6 @@ inline void tetgenmesh::setpoint2ppt(point pt, point value) {
   ((tetrahedron *) (pt))[point2simindex + 1] = (tetrahedron) value;
 }
 
-inline tetgenmesh::Cpoint* tetgenmesh::point2Cp(point pt) {
-  return (tetgenmesh::Cpoint*) ((tetrahedron *) (pt))[point2simindex + 2];
-}
-
-inline void tetgenmesh::setpoint2Cp(point pt, Cpoint* value) {
-  ((tetrahedron *) (pt))[point2simindex + 2] = (tetrahedron) value;
-}
 
 inline tetgenmesh::shellface tetgenmesh::point2sh(point pt) {
   return (shellface) ((tetrahedron *) (pt))[point2simindex + 3];

@@ -1,3 +1,5 @@
+[![TetGen Tests](https://github.com/TetGen/TetGen/actions/workflows/CI.yml/badge.svg)](https://github.com/TetGen/TetGen/actions/workflows/CI.yml)
+
 TetGen
 ======
 

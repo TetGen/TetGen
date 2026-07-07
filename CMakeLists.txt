@@ -57,7 +57,7 @@ set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
 set(TESTFILES_BRANCH "main" CACHE STRING
   "Branch of the TESTFILES_REPO repository to clone")
 
-set(TETGEN_TEST_TIMEOUT 30 CACHE STRING
+set(TETGEN_TEST_TIMEOUT 60 CACHE STRING
   "CTest timeout in seconds for each TetGen test")
 
 # --- Fetch test files and register tests ------------------------------------

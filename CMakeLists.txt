@@ -26,7 +26,9 @@ set_target_properties(tet PROPERTIES "COMPILE_DEFINITIONS" TETLIBRARY)
 #
 # Usage:
 #
-#   cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path> -DTESTFILES_BRANCH=<branchname>
+#   cmake -B <build-dir> -DTESTFILES_REPO=<url_or_path>
+#   cmake -B <build-dir> -DTESTFILES_BRANCH=<branch>
+#   cmake -B <build-dir> -DTETGEN_TEST_TIMEOUT=<seconds>
 #   cmake --build <build-dir>
 #   ctest --test-dir <build-dir> --output-on-failure
 #
@@ -53,7 +55,10 @@ set(TESTFILES_REPO "https://codeberg.org/TetGen/TetGenTests.git" CACHE STRING
   "URL or local path to the Git repository containing TetGen test files")
 
 set(TESTFILES_BRANCH "main" CACHE STRING
-  "Branch of the Git repository containing TetGen test files")
+  "Branch of the TESTFILES_REPO repository to clone")
+
+set(TETGEN_TEST_TIMEOUT 30 CACHE STRING
+  "CTest timeout in seconds for each TetGen test")
 
 # --- Fetch test files and register tests ------------------------------------
 
@@ -63,7 +68,9 @@ if(BUILD_TESTING AND TESTFILES_REPO)
 
   # Shallow-clone the testfiles repository at configure time (once).
   if(NOT EXISTS "${TESTFILES_DIR}/.git")
-    message(STATUS "Cloning testfiles repository: ${TESTFILES_REPO}@${TESTFILES_BRANCH}")
+    message(STATUS
+      "Cloning testfiles repository: ${TESTFILES_REPO} (branch: ${TESTFILES_BRANCH})"
+    )
     execute_process(
       COMMAND git clone --depth 1 --single-branch --branch "${TESTFILES_BRANCH}" "${TESTFILES_REPO}" "${TESTFILES_DIR}"
       RESULT_VARIABLE _git_result
@@ -149,7 +156,7 @@ if(BUILD_TESTING AND TESTFILES_REPO)
       # the test as skipped instead of failed.
       set_tests_properties("${_test_name}" PROPERTIES
         SKIP_REGULAR_EXPRESSION "TETGEN_TEST_SKIPPED"
-        TIMEOUT                 30
+        TIMEOUT                 "${TETGEN_TEST_TIMEOUT}"
         LABELS                  "${_ext_label}"
       )
 

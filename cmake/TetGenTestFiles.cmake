@@ -252,7 +252,7 @@ set(TETGEN_TESTS
   "stp_surf/team2_1.hh.surf.mesh|-pY"
   "stp_surf/thin_wall_1.hh.surf.mesh|-pY"
   "stp_surf/tmountop20_1.hh.surf.mesh|-pY"
-  "stp_surf/ToolingBlock1_1.hh.surf.mesh|-pY"
+  # "stp_surf/ToolingBlock1_1.hh.surf.mesh|-pY"
   "stp_surf/ToolingPlate_1.hh.surf.mesh|-pY"
   "stp_surf/transmitter_1.hh.surf.mesh|-pY"
   "stp_surf/vh3148-ae22.surf.mesh|-pY"

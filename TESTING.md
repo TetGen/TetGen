@@ -144,6 +144,28 @@ ctest --test-dir <build-dir> -V                # verbose: show full TetGen outpu
 ctest --test-dir <build-dir> -VV               # extra verbose
 ```
 
+### Showing skip reasons
+
+CTest's own "The following tests did not run:" summary only reports
+`(Skipped)`, without saying why. The [ctest-report.sh](ctest-report.sh) wrapper
+runs ctest normally and appends an extra block with the actual reason, taken
+from each test's per-test log file:
+
+```bash
+./ctest-report.sh --test-dir <build-dir> --output-on-failure
+```
+
+```
+The following tests did not run:
+        132 - tetgen/cgal/bunny00.off/-pqQ (Skipped)
+
+The following tests did not run: (with reasons)
+        132 - tetgen/cgal/bunny00.off/-pqQ (Skipped: The input surface mesh contain self-intersections.)
+```
+
+It accepts the same options as `ctest` and forwards its exit code, so it can
+be used as a drop-in replacement in scripts or CI.
+
 ### Parallel execution
 
 ```bash

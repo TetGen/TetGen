@@ -17,15 +17,22 @@
 #
 # Return-code dispatch (same semantics as before):
 #
+# The exit codes and their meaning are defined by terminatetetgen() in
+# tetgen.h; the reason strings below are taken verbatim (or paraphrased)
+# from the printf() messages in that function so they stay in sync with
+# the source code.
+#
 #   0  -> PASSED   (normal exit, code 0)
-#   3  -> SKIPPED  (prints TETGEN_TEST_SKIPPED marker, exit 0)
-#   4  -> SKIPPED  (prints TETGEN_TEST_SKIPPED marker, exit 0)
-#   5  -> SKIPPED  (prints TETGEN_TEST_SKIPPED marker, exit 0)
-#   10 -> SKIPPED  (prints TETGEN_TEST_SKIPPED marker, exit 0)
+#   3  -> SKIPPED  ("The input surface mesh contain self-intersections.")
+#   4  -> SKIPPED  ("A very small input feature size was detected.")
+#   5  -> SKIPPED  ("Two very close input facets were detected.")
+#   10 -> SKIPPED  ("An input error was detected.")
 #   *  -> FAILED   (exit 1 via message(FATAL_ERROR))
 #
-# CTest detects skipped tests through the SKIP_REGULAR_EXPRESSION property
-# matching the "TETGEN_TEST_SKIPPED" marker in the test output.
+# For skipped tests, the reason is printed along with the SKIPPED status
+# and a "TETGEN_TEST_SKIPPED" marker is emitted. CTest detects skipped
+# tests through the SKIP_REGULAR_EXPRESSION property matching that marker
+# in the test output.
 #
 
 cmake_minimum_required(VERSION 3.16)
@@ -80,20 +87,28 @@ message("TetGen exit code: ${_result}")
 
 set(_is_skip FALSE)
 set(_is_fail FALSE)
+set(_reason "")
 
+# The reason strings below correspond to the printf() messages emitted by
+# terminatetetgen() in tetgen.h for each exit code; keep them in sync with
+# that function if it changes.
 if("${_result}" EQUAL 0)
   set(_status "PASSED")
 elseif("${_result}" EQUAL 3)
-  set(_status "SKIPPED (PLC error detected)")
+  set(_reason "The input surface mesh contain self-intersections.")
+  set(_status "SKIPPED (${_reason})")
   set(_is_skip TRUE)
 elseif("${_result}" EQUAL 4)
-  set(_status "SKIPPED (Small feature detected)")
+  set(_reason "A very small input feature size was detected.")
+  set(_status "SKIPPED (${_reason})")
   set(_is_skip TRUE)
 elseif("${_result}" EQUAL 5)
-  set(_status "SKIPPED (Try -Y option)")
+  set(_reason "Two very close input facets were detected (try -Y option).")
+  set(_status "SKIPPED (${_reason})")
   set(_is_skip TRUE)
 elseif("${_result}" EQUAL 10)
-  set(_status "SKIPPED (Input error detected)")
+  set(_reason "An input error was detected.")
+  set(_status "SKIPPED (${_reason})")
   set(_is_skip TRUE)
 else()
   set(_status "FAILED (unexpected return code ${_result})")
@@ -120,12 +135,13 @@ Status: ${_status}
 # ---------------------------------------------------------------------------
 # Signal result to CTest
 #
-#   SKIP : print a marker that SKIP_REGULAR_EXPRESSION will match, exit 0
+#   SKIP : print the reason plus a marker that SKIP_REGULAR_EXPRESSION will
+#          match, exit 0
 #   FAIL : message(FATAL_ERROR ...) causes cmake to exit with code 1
 #   PASS : normal exit (code 0)
 # ---------------------------------------------------------------------------
 if(_is_skip)
-  message("TETGEN_TEST_SKIPPED")
+  message("TETGEN_TEST_SKIPPED: ${_reason}")
 elseif(_is_fail)
   message(FATAL_ERROR "Test FAILED with exit code ${_result}")
 endif()

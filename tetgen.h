@@ -671,7 +671,7 @@ public:
   int verbose;                                                     // '-V', 0.
   int nocoarsen;                                                   // '-K', 0.
   int nometricswritten;                                            // '-G', 0.
-
+  
   // Parameters
   int vertexperblock;                                           // '-x', 4092.
   int tetrahedraperblock;                                       // '-x', 8188.
@@ -2293,7 +2293,7 @@ public:
   // array (size = numberoftetrahedra * 6) for storing high-order nodes of each
   // tetrahedron
   point *highordertable;
-
+  
   void jettisonnodes();
   void highorder();
   void indexelements();
@@ -2533,7 +2533,7 @@ public:
     if (subdomain_markers != NULL) {
       delete [] subdomain_markers;
     }
-
+    
     if (highordertable != NULL) {
         delete[] highordertable;
     }

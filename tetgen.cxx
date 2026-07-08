@@ -5473,15 +5473,15 @@ REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
 
 int tetgenmesh::set_above_point3(point A, point B, point C)
 {
-  REAL sign = orient3d(A, B, C, dummypoint); // Check dummypoint first.
-  
-  if (sign != 0) {
-    _above_point = dummypoint;
-    return 1;
-  }
+  //REAL sign = orient3d(A, B, C, dummypoint); // Check dummypoint first.
+  //
+  //if (sign != 0) {
+  //  _above_point = dummypoint;
+  //  return 1;
+  //}
   
   for (int i = 0; i < 3; i++) {
-    sign = orient3d(A, B, C, _above_points[i]);
+    REAL sign = orient3d(A, B, C, _above_points[i]);
     if (sign != 0) {
       _above_point = _above_points[i];
       return 1;
@@ -35713,7 +35713,6 @@ void tetgenmesh::highorder()
     } // i
     tetloop.tet = tetrahedrontraverse();
   }
-
 }
 
 //============================================================================//

@@ -5473,12 +5473,12 @@ REAL tetgenmesh::orient4d_s(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
 
 int tetgenmesh::set_above_point3(point A, point B, point C)
 {
-  //REAL sign = orient3d(A, B, C, dummypoint); // Check dummypoint first.
-  //
-  //if (sign != 0) {
-  //  _above_point = dummypoint;
-  //  return 1;
-  //}
+  REAL sign = orient3d(A, B, C, dummypoint); // Check dummypoint first.
+  
+  if (sign != 0) {
+    _above_point = dummypoint;
+    return 1;
+  }
   
   for (int i = 0; i < 3; i++) {
     REAL sign = orient3d(A, B, C, _above_points[i]);
@@ -6617,23 +6617,34 @@ void tetgenmesh::lu_solve(REAL lu[4][4], int n, int* ps, REAL* b, int N)
 
 REAL tetgenmesh::incircle3d(point pa, point pb, point pc, point pd, point R)
 {
-  if (R == NULL) {
-    if (!set_above_point4(pa, pb, pc, pd)) {
-      terminatetetgen(this, 2);
+  REAL area2[2], n1[3], n2[3], c[3];
+  REAL sign, r, d;
+
+  // Calculate the areas of the two triangles [a, b, c] and [b, a, d].
+  facenormal(pa, pb, pc, n1, 1, NULL);
+  area2[0] = dot(n1, n1);
+  facenormal(pb, pa, pd, n2, 1, NULL);
+  area2[1] = dot(n2, n2);
+
+  if (area2[0] > area2[1]) {
+    // Choose [a, b, c] as the base triangle.
+    circumsphere(pa, pb, pc, NULL, c, &r);
+    d = distance(c, pd);
+  } else {
+    // Choose [b, a, d] as the base triangle.
+    if (area2[1] > 0) {
+      circumsphere(pb, pa, pd, NULL, c, &r);
+      d = distance(c, pc);
+    } else {
+      // The four points are collinear. This case only happens on the boundary.
+      return 0; // Return "not inside".
     }
   }
-  
-  REAL o3dsign = orient3d(pa, pb, pc, _above_point);
-  REAL sign = insphere_s(pa, pb, pc, _above_point, pd);
-  int negative;
-  if (o3dsign > 0) {
-    negative = -1;
-  } else if (o3dsign < 0) {
-    negative = 1;
-  } else {
-    terminatetetgen(this, 2); //assert(0); // not possible
+
+  sign = d - r;
+  if (fabs(sign) / r < b->epsilon) {
+    sign = 0;
   }
-  sign *= negative;
 
   return sign;
 }

@@ -1,14 +1,22 @@
 # Set the minimum required version of cmake for a project.
 cmake_minimum_required(VERSION 3.16)
 
+# Provides configure_package_config_file() and write_basic_package_version_file(),
+# used below to generate the package config files needed for find_package(TetGen).
 include(CMakePackageConfigHelpers)
 
+# Declares the project name, version, description and language(s).
+# Must precede most other commands; sets PROJECT_VERSION/PROJECT_NAME and
+# enables the C++ compiler.
 project(TetGen
   VERSION 1.6.1
   DESCRIPTION "A Quality Tetrahedral Mesh Generator and 3D Delaunay Triangulator"
   LANGUAGES CXX
 )
 
+# Defines standard, platform-correct install directory variables
+# (CMAKE_INSTALL_BINDIR, LIBDIR, INCLUDEDIR, DATADIR, ...) used by the
+# install() calls below.
 include(GNUInstallDirs)
 
 # Add an executable to the project using the specified source files.
@@ -17,6 +25,10 @@ add_executable(tetgen tetgen.cxx predicates.cxx)
 # Add a library to the project using the specified source files.
 # In Linux/Unix, it will create libtet.a
 add_library(tet STATIC tetgen.cxx predicates.cxx)
+
+# Alias so this build (e.g. via add_subdirectory) can be consumed under the
+# same namespaced name TetGen::TetGen as when installed and found with
+# find_package(TetGen).
 add_library(TetGen::TetGen ALIAS tet)
 
 # Shewchuk's exact arithmetic predicates rely on strict floating-point
@@ -29,27 +41,54 @@ set_source_files_properties(predicates.cxx PROPERTIES COMPILE_OPTIONS "-O0")
 #We use this here to set -DTETLIBRARY for when compiling the
 #library
 target_include_directories(tet PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>" "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+# TETLIBRARY makes TetGen compile itself as a linkable library (exposing
+# tetrahedralize() as a callable API) instead of a standalone CLI tool.
+# Only the 'tet' target needs it, not the 'tetgen' executable.
 target_compile_definitions(tet PRIVATE TETLIBRARY)
+
+# EXPORT_NAME TetGen: when exported (see TetGenTargets below), the target is
+# exposed as TetGen::TetGen rather than TetGen::tet.
+# POSITION_INDEPENDENT_CODE ON: builds with -fPIC so this static library can
+# safely be linked into shared libraries/executables.
 set_target_properties(tet PROPERTIES
     EXPORT_NAME TetGen
     POSITION_INDEPENDENT_CODE ON
 )
 
+# Installs the tetgen executable into the standard binary directory
+# (e.g. /usr/local/bin) on `make install`.
 install(TARGETS tetgen RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# Installs the public header so downstream projects linking against the
+# library can #include <tetgen.h>.
 install(FILES tetgen.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# Installs the license file into the shared data directory
+# (e.g. /usr/local/share/tetgen), a common packaging convention.
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/tetgen)
 
+# Installs the static library archive (libtet.a) and registers it under the
+# export set "TetGenTargets", later written out as CMake import targets
+# (see install(EXPORT ...) below).
 install(TARGETS tet
     EXPORT TetGenTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+# Generates and installs TetGenTargets.cmake, which defines the imported
+# target TetGen::TetGen for consumers using find_package(TetGen).
+# NAMESPACE prefixes exported target names with "TetGen::".
 install(EXPORT TetGenTargets
     FILE TetGenTargets.cmake
     NAMESPACE TetGen::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen
 )
 
+# Generates TetGenConfig.cmake from the cmake/TetGenConfig.cmake.in template,
+# substituting install paths. This is the file find_package(TetGen) actually
+# loads (it typically includes TetGenTargets.cmake). The NO_* options skip
+# generating legacy boilerplate macros this project doesn't need.
 configure_package_config_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/TetGenConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake
@@ -58,13 +97,21 @@ configure_package_config_file (
     NO_CHECK_REQUIRED_COMPONENTS_MACRO # No components
 )
 
+# Generates TetGenConfigVersion.cmake, letting find_package(TetGen 1.6) check
+# version compatibility. SameMinorVersion means any 1.6.x install satisfies a
+# request for 1.6, but not 1.7 or 1.5.
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMinorVersion
 )
 
+# Installs the generated config file (from configure_package_config_file above)
+# into the package's cmake config directory so find_package can locate it.
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen)
+
+# Installs the generated version file (from write_basic_package_version_file
+# above) alongside the config file.
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tetgen)
 
 
@@ -100,8 +147,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TetGenConfigVersion.cmake DESTINATION 
 # Per-test log files are written to <build-dir>/Testing/Logs/<inputfile>_<flags>.log
 #
 
+# User-settable cache boolean, off by default, gating the entire testing
+# block below so a plain build doesn't clone test repos or register tests.
 option(TETGEN_ENABLE_TESTING "Enable CTest testing for TetGen" OFF)
 
+# Only pull in CMake's CTest module (which defines BUILD_TESTING and the
+# enable_testing()/add_test() machinery) when testing was opted into,
+# avoiding unnecessary setup otherwise.
 if(TETGEN_ENABLE_TESTING)
   include(CTest)
 endif()
@@ -198,6 +250,11 @@ if(TETGEN_ENABLE_TESTING)
         string(REPLACE "-" "" _flags_id "${_flags}")
         set(_logfile "${TETGEN_LOG_DIR}/${_file_id}_${_flags_id}.log")
 
+        # Registers one CTest test per (input file, flag-combination) pair.
+        # Runs `cmake -P run_tetgen_test.cmake` (rather than tetgen directly) so
+        # the wrapper script can execute tetgen, capture its return code/output,
+        # write a log file, and translate specific exit codes into a "skipped"
+        # marker (see SKIP_REGULAR_EXPRESSION below) instead of a hard failure.
         add_test(
           NAME    "${_test_name}"
           COMMAND "${CMAKE_COMMAND}"

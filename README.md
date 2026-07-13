@@ -18,8 +18,6 @@ The following releases are provided:
 - [v1.5.1, 2018](https://codeberg.org/TetGen/TetGen/archive/v1.5.1.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), recommended as most stable version.
 - [v1.6.0, 2020](https://codeberg.org/TetGen/TetGen/archive/v1.6.0.tar.gz): [AGPLv3 license](https://www.gnu.org/licenses/agpl-3.0.html), most recent version with some rough edges.
 
-It is planned to resume active development of TetGen in cooperation between the main developer Hang Si and  the Weierstrass Institute. Future versions of TetGen will be published via this repository.
-
 ## Documentation
 - Manuals are available in https://codeberg.org/TetGen/Manuals.
 - A technical paper about TetGen is available at [Hang Si, "TetGen, a Delaunay-Based Quality Tetrahedral Mesh Generator". ACM Trans. on Mathematical Software. 41 (2), 2015](http://doi.acm.org/10.1145/2629697)
@@ -27,7 +25,7 @@ It is planned to resume active development of TetGen in cooperation between the 
   
 ## Commercial licensing
 
-TetGen versions developed at WIAS are distributed under a dual licensing scheme.  As an alternative to the use of TetGen under the AGPLv3 license, consider the option to obtain a commercial license for a fee.  These licenses are offered by the Weierstrass Institute for Applied Analysis and Stochastics (WIAS). As a rule, licenses are provided "as-is", unlimited in time for a one time fee.  Please send corresponding requests to: `tetgen at wias-berlin.de`.  Please do not forget to include some description of your company and the realm of its activities.
+TetGen versions up to v1.6.x are distributed under a dual licensing scheme.  As an alternative to the use of TetGen under the AGPLv3 license, consider the option to obtain a commercial license for a fee.  These licenses are offered by the Weierstrass Institute for Applied Analysis and Stochastics (WIAS). As a rule, licenses are provided "as-is", unlimited in time for a one time fee.  Please send corresponding requests to: `tetgen at wias-berlin.de`.  Please do not forget to include some description of your company and the realm of its activities.
 
 Details about the extension of this dual licensing scheme for future versions of TetGen will be announced in due time.
 

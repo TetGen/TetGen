@@ -2537,8 +2537,6 @@ public:
     if (highordertable != NULL) {
         delete[] highordertable;
     }
-
-    initializetetgenmesh();
   }
 
   tetgenmesh()

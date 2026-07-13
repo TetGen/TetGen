@@ -12,7 +12,7 @@ project(TetGen
 include(GNUInstallDirs)
 
 # Add an executable to the project using the specified source files.
-add_executable(tetgen ${INC} ${SRC})
+add_executable(tetgen tetgen.cxx predicates.cxx)
 
 # Add a library to the project using the specified source files.
 # In Linux/Unix, it will create libtet.a

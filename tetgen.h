@@ -1,19 +1,18 @@
 //============================================================================//
-//                                                                            //
-// TetGen                                                                     //
+//  _____     _    _____                                                      //
+// |_   _|__ | |_ / ____|___ _ __                                             //
+//   | |/ _ \| __| |  _ / _ \ '_ \                                            //
+//   | |  __/| |_| |_| |  __/ | | |                                           //
+//   |_|\___/ \__|\_____\___|_| |_|                                           //
 //                                                                            //
 // A Quality Tetrahedral Mesh Generator and A 3D Delaunay Triangulator        //
 //                                                                            //
-// Version 1.6.0                                                              //
-// August 31, 2020                                                            //
-//                                                                            //
-// Copyright (C) 2002--2020                                                   //
+// Version 1.6.1                                                              //
+// Copyright (C) 2002--2026                                                   //
 //                                                                            //
 // Hang Si                                                                    //
-// Research Group: Numerical Mathematics and Scientific Computing             //
-// Weierstrass Institute for Applied Analysis and Stochastics (WIAS)          //
-// Mohrenstr. 39, 10117 Berlin, Germany                                       //
-// si@wias-berlin.de                                                          //
+// hangsi@dlut.edu.cn                                                         //
+// https://codeberg.org/TetGen/TetGen                                         //
 //                                                                            //
 // TetGen is a tetrahedral mesh generator. It creates 3d triangulations of    //
 //   polyhedral domains. It generates meshes with well-shaped elements whose  //
@@ -39,7 +38,7 @@
 //   Delaunay-Based Quality Tetrahedral Mesh Generator", ACM Transactions on  //
 //   Mathematical Software, February 2015, https://doi.org/10.1145/2629697.   //
 //                                                                            //
-// TetGen is freely available through the website: http://www.tetgen.org.     //
+// TetGen is freely available through: https://codeberg.org/TetGen/TetGen.    //
 //   It may be copied, modified, and redistributed for non-commercial use.    //
 //   Please consult the file LICENSE for the detailed copyright notices.      //
 //                                                                            //
@@ -48,6 +47,10 @@
 
 #ifndef tetgenH
 #define tetgenH
+
+#define TETGEN_MAJOR_VERSION 1
+#define TETGEN_MINOR_VERSION 6
+#define TETGEN_PATCH_VERSION 1
 
 // To compile TetGen as a library instead of an executable program, define
 //   the TETLIBRARY symbol.
@@ -78,12 +81,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-
-// The types 'intptr_t' and 'uintptr_t' are signed and unsigned integer types,
-//   respectively. They are guaranteed to be the same width as a pointer.
-//   They are defined in <stdint.h> by the C99 Standard.
-
 #include <stdint.h>
+#include <vector>
+#include <iomanip>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
+
 
 //============================================================================//
 //                                                                            //
@@ -154,6 +159,13 @@ public:
     int *elist;
   } vorofacet;
 
+
+  typedef struct
+  {
+    int v1, v2, v3;
+    int tag;
+    double maxvol;
+  } Subdomain_Facet;
 
   // Additional parameters associated with an input (or mesh) vertex.
   //   These informations are provided by CAD libraries. 
@@ -248,7 +260,10 @@ public:
   REAL *regionlist;
   int numberofregions;
 
-  // 'refine_elem_list': An array of tetrahedra to be refined.  The first 
+  // a list of regions (subdomains) defined by facets.
+  std::vector<Subdomain_Facet> Subdomain_Facets;
+
+  // 'refine_elem_list': An array of tetrahedra to be refined.  The first
   //   tetrahedron's first corner is at index [0], followed by its other 
   //   corners. Four integers per element.
   // 'refine_elem_vol_list':  An array of constraints, i.e. tetrahedron's
@@ -339,6 +354,7 @@ public:
   bool load_edge(char*);
   bool load_face(char*);
   bool load_tet(char*);
+  bool load_region(char*);
   bool load_vol(char*);
   bool load_var(char*);
   bool load_mtr(char*);
@@ -349,7 +365,6 @@ public:
   bool load_stl(char*);
   bool load_vtk(char*);
   bool load_medit(char*, int);
-  bool load_neumesh(char*, int);
   bool load_plc(char*, int);
   bool load_tetmesh(char*, int);
   void save_nodes(const char*);
@@ -389,7 +404,7 @@ public:
     pointattributelist = (REAL *) NULL;
     pointmtrlist = (REAL *) NULL;
     pointmarkerlist = (int *) NULL;
-	point2tetlist = (int *) NULL;
+	  point2tetlist = (int *) NULL;
     pointparamlist = (pointparam *) NULL;
     numberofpoints = 0;
     numberofpointattributes = 0;
@@ -399,8 +414,8 @@ public:
     tetrahedronattributelist = (REAL *) NULL;
     tetrahedronvolumelist = (REAL *) NULL;
     neighborlist = (int *) NULL;
-	tet2facelist = (int *) NULL;
-	tet2edgelist = (int *) NULL;
+	  tet2facelist = (int *) NULL;
+	  tet2edgelist = (int *) NULL;
     numberoftetrahedra = 0;
     numberofcorners = 4; 
     numberoftetrahedronattributes = 0;
@@ -409,8 +424,8 @@ public:
     trifacemarkerlist = (int *) NULL;
     o2facelist = (int *) NULL;
     face2tetlist = (int *) NULL;
-	face2edgelist = (int *) NULL;
-    numberoftrifaces = 0; 
+	  face2edgelist = (int *) NULL;
+    numberoftrifaces = 0;
 
     edgelist = (int *) NULL;
     edgemarkerlist = (int *) NULL;
@@ -476,7 +491,7 @@ public:
     if (pointmarkerlist != (int *) NULL) {
       delete [] pointmarkerlist;
     }
-	if (point2tetlist != (int *) NULL) {
+	  if (point2tetlist != (int *) NULL) {
       delete [] point2tetlist;
     }
     if (pointparamlist != (pointparam *) NULL) {
@@ -496,11 +511,11 @@ public:
       delete [] neighborlist;
     }
     if (tet2facelist != (int *) NULL) {
-	  delete [] tet2facelist;
-	}
-	if (tet2edgelist != (int *) NULL) {
-	  delete [] tet2edgelist;
-	}
+	    delete [] tet2facelist;
+	  }
+	  if (tet2edgelist != (int *) NULL) {
+	    delete [] tet2edgelist;
+	  }
 
     if (trifacelist != (int *) NULL) {
       delete [] trifacelist;
@@ -514,7 +529,7 @@ public:
     if (face2tetlist != (int *) NULL) {
       delete [] face2tetlist;
     }
-	if (face2edgelist != (int *) NULL) {
+	  if (face2edgelist != (int *) NULL) {
       delete [] face2edgelist;
     }
 
@@ -599,13 +614,9 @@ public:
 //                                                                            //
 // tetgenbehavior                                                             //
 //                                                                            //
-// A structure for maintaining the switches and parameters used by TetGen's   //
-// internal data structure and algorithms.                                    //
+// A structure for maintaining TetGen's options and parameters.               //
 //                                                                            //
-// All switches and parameters are initialized with default values. They are  //
-// set by the command line arguments (argc, argv).                            //
-//                                                                            //
-// NOTE: Some switches are incompatible with others. While some may depend    //
+// NOTE: Some options are incompatible with others. While some may depend     //
 // on other switches. The routine parse_commandline() sets the switches from  //
 // the command line (a list of strings) and checks the consistency of the     //
 // applied switches.                                                          //
@@ -616,7 +627,7 @@ class tetgenbehavior {
 
 public:
 
-  // Switches of TetGen. 
+  // Options
   int plc;                                                         // '-p', 0.
   int psc;                                                         // '-s', 0.
   int refine;                                                      // '-r', 0.
@@ -638,13 +649,14 @@ public:
   int nomergefacet;                                                // '-M', 0.
   int nomergevertex;                                               // '-M', 0.
   int noexact;                                                     // '-X', 0.
-  int nostaticfilter;                                              // '-X', 0.
+  int nostaticfilter;                                             // '-X1', 0.
   int zeroindex;                                                   // '-z', 0.
   int facesout;                                                    // '-f', 0.
   int edgesout;                                                    // '-e', 0.
   int neighout;                                                    // '-n', 0.
   int voroout;                                                     // '-v', 0.
   int meditview;                                                   // '-g', 0.
+  int out_mesh_to_nas;                                            // '-g2', 0.
   int vtkview;                                                     // '-k', 0.
   int vtksurfview;                                                 // '-k', 0.
   int nobound;                                                     // '-B', 0.
@@ -657,8 +669,10 @@ public:
   int quiet;                                                       // '-Q', 0.
   int nowarning;                                                   // '-W', 0.
   int verbose;                                                     // '-V', 0.
-
-  // Parameters of TetGen.
+  int nocoarsen;                                                   // '-K', 0.
+  int nometricswritten;                                            // '-G', 0.
+  
+  // Parameters
   int vertexperblock;                                           // '-x', 4092.
   int tetrahedraperblock;                                       // '-x', 8188.
   int shellfaceperblock;                                        // '-x', 2044.
@@ -669,6 +683,7 @@ public:
   int fliplinklevel;                                                    // -1.
   int flipstarsize;                                                     // -1.
   int fliplinklevelinc;                                                 //  1.
+  int flip_valid_angles;                                                //  0.
   int opt_max_flip_level;                                          // '-O', 3.
   int opt_scheme;                                                // '-O/#', 7.
   int opt_iterations;                                             // -O//#, 3.
@@ -690,16 +705,26 @@ public:
   REAL facet_small_ang_tol;                                   // '-p//', 15.0.
   REAL maxvolume;                                               // '-a', -1.0.
   REAL maxvolume_length;                                        // '-a', -1.0.
-  REAL minratio;                                                 // '-q', 0.0.
+  REAL minratio;                                                // '-q#', 2.0.
+  REAL mindihedral;                                            // '-q/#', 0.0.
+  REAL segment_enc_angle;                             // '-q//#', 90.0 degree.
+  REAL facet_enc_dihed_angle;                        // '-q///#', 90.0 degree.
+  REAL min_edge_length;                                         // '-L#', 0.0.
+  REAL growth_ratio;                                            //  '-L/#', 0.
   REAL opt_max_asp_ratio;                                           // 1000.0.
   REAL opt_max_edge_ratio;                                           // 100.0.
-  REAL mindihedral;                                              // '-q', 5.0.
   REAL optmaxdihedral;                                          // -o/# 177.0.
   REAL metric_scale;                                              // -m#, 1.0.
   REAL smooth_alpha;                                             // '-s', 0.3.
   REAL coarsen_percent;                                         // -R1/#, 1.0.
   REAL elem_growth_ratio;             // Growth ratio of # elements, -r#, 0.0.
-  REAL refine_progress_ratio;                                   // -r/#, 0.333.
+  REAL refine_progress_ratio;                                  // -r/#, 0.333.
+
+  int convert_interior_subdomains_to_holes;                         // -A2, 0.
+
+  int use_volume_size_map;                         // -rS use volume size map.
+  int debug_out_Steiner_tags;  // -GN use out_nodes_Steiner() to output nodes.
+  int debug_volume_size_map;            // -GS Output volume size map to .vtk.
 
   // Strings of command line arguments and input/output file names.
   char commandline[1024];
@@ -708,11 +733,7 @@ public:
   char addinfilename[1024];
   char bgmeshfilename[1024];
 
-  // Read an additional tetrahedral mesh and treat it as holes [2018-07-30].
-  int hole_mesh;                                                   // '-H', 0.
-  char hole_mesh_filename[1024];
-
-  // The input object of TetGen. They are recognized by either the input 
+  // The input object of TetGen. They are recognized by either the input
   //   file extensions or by the specified options. 
   // Currently the following objects are supported:
   //   - NODES, a list of nodes (.node); 
@@ -724,7 +745,7 @@ public:
   //   - MESH, a tetrahedral mesh (.ele).
   // If no extension is available, the imposed command line switch
   //   (-p or -r) implies the object. 
-  enum objecttype {NODES, POLY, OFF, PLY, STL, MEDIT, VTK, MESH, NEU_MESH} object;
+  enum objecttype {NODES, POLY, OFF, PLY, STL, MEDIT, VTK, MESH} object;
 
 
   void syntax();
@@ -765,6 +786,7 @@ public:
     neighout = 0;
     voroout = 0;
     meditview = 0;
+    out_mesh_to_nas = 0;
     vtkview = 0;
     vtksurfview = 0;
     nobound = 0;
@@ -779,6 +801,8 @@ public:
     quiet = 0;
     nowarning = 0;
     verbose = 0;
+    nocoarsen = 0;
+    nometricswritten = 0;
 
     vertexperblock = 4092;
     tetrahedraperblock = 8188;
@@ -790,6 +814,7 @@ public:
     fliplinklevel = -1; 
     flipstarsize = -1;  
     fliplinklevelinc = 1;
+    flip_valid_angles = 0;
     opt_scheme = 7;
     opt_max_flip_level = 3;
     opt_iterations = 3;
@@ -809,9 +834,13 @@ public:
     maxvolume = -1.0;
     maxvolume_length = -1.0;
     minratio = 2.0;
+    mindihedral = 3.5;
+    segment_enc_angle = 90.0;
+    facet_enc_dihed_angle = 90.0;
+    min_edge_length = 0.0;
+    growth_ratio = 0.;
     opt_max_asp_ratio = 1000.;
     opt_max_edge_ratio = 100.;
-    mindihedral = 3.5;
     optmaxdihedral = 177.00;
     epsilon = 1.0e-8;
     coarsen_percent = 1.0;
@@ -819,7 +848,13 @@ public:
     elem_growth_ratio = 0.0; // -r#
     refine_progress_ratio = 0.333; // -r/#
     object = NODES;
-    
+
+    convert_interior_subdomains_to_holes = 0; // -A2
+
+    use_volume_size_map = 0; // -rS
+    debug_out_Steiner_tags = 0; // -GN
+    debug_volume_size_map = 0; // -GS
+
     smooth_cirterion = 3; // -s# default smooth surface and volume vertices.
     smooth_maxiter = 7;   // set by -s#/7
     smooth_alpha = 0.3;   // relax parameter, set by -s#/#/0.3
@@ -829,9 +864,6 @@ public:
     outfilename[0] = '\0';
     addinfilename[0] = '\0';
     bgmeshfilename[0] = '\0';
-
-    hole_mesh = 0;
-    hole_mesh_filename[0] = '\0';
 
   }
 
@@ -869,13 +901,13 @@ REAL orient4dexact(REAL* pa, REAL* pb, REAL* pc, REAL* pd, REAL* pe,
 
 //============================================================================//
 //                                                                            //
-// tetgenmesh    TetGen's internal mesh data structure.                       //
+// tetgenmesh    TetGen's mesh data structure.                                //
 //                                                                            //
-// It uses a tetrahedron-based mesh data structure. It implements elementary  //
-// flip operations to locally modify the mesh. It implements basic meshing    //
-// algorithms to create Delaunay tetrahedraliations, to perform boundary      //
-// recovery, to place Steiner points in the mesh domain, and to optimize the  //
-// quality of the mesh.                                                       //
+// It implements a tetrahedron-based mesh data structure. It implements algo- //
+// rithms to perform elementary flip operations to locally modify the mesh,   //
+// to create Delaunay tetrahedraliations, to perform boundary recovery, and   //
+// to place Steiner points in the mesh domain, and to optimize the quality of //
+// the mesh.                                                                  //
 //                                                                            //
 //============================================================================//
 
@@ -947,6 +979,7 @@ public:
   //   - a metric tensor (optional, for -q or -m switch);
   //   - a pointer to an adjacent tetrahedron;
   //   - a pointer to a parent (or a duplicate) point;
+  //   - a pointer to the Cpoint (to access additional attributes);
   //   - a pointer to an adjacent subface or segment (optional, -p switch);
   //   - a pointer to a tet in background mesh (optional, for -m switch);
   //   - an integer for boundary marker (point index);
@@ -956,6 +989,7 @@ public:
   //   determined at the runtime.
 
   typedef REAL *point;
+
 
 //============================================================================//
 //                                                                            //
@@ -1189,6 +1223,9 @@ public:
     REAL smlen; // for useinsertradius.
     point parentpt;
 
+    int check_gr_ratio;
+    double gr_len;
+
     void init() {
       iloc = bowywat = lawson = 0;
       splitbdflag = validflag = respectbdflag = 0;
@@ -1205,6 +1242,9 @@ public:
       smlenflag = 0;
       smlen = 0.0;
       parentpt = NULL;
+      
+      check_gr_ratio = 0;
+      gr_len = 0.;
     }
 
     insertvertexflags() {
@@ -1289,7 +1329,7 @@ public:
 
     // The one of goals of optimization.
     int max_min_volume;      // Maximize the minimum volume.
-	int min_max_aspectratio; // Minimize the maximum aspect ratio. 
+	  int min_max_aspectratio; // Minimize the maximum aspect ratio.
     int min_max_dihedangle;  // Minimize the maximum dihedral angle.
 
     // The initial and improved value.
@@ -1336,12 +1376,12 @@ public:
   // Labels that signify the result of point location.
   enum locateresult {UNKNOWN, OUTSIDE, INTETRAHEDRON, ONFACE, ONEDGE, ONVERTEX,
                      ENCVERTEX, ENCSEGMENT, ENCSUBFACE, NEARVERTEX, NONREGULAR,
-                     INSTAR, BADELEMENT, NULLCAVITY, SHARPCORNER, FENSEDIN,
-                     NONCOPLANAR, SELF_ENCROACH};
+                     INSTAR, BADELEMENT, MINEDGELENGTH, NULLCAVITY, SHARPCORNER,
+                     FENSEDIN, NONCOPLANAR, SELF_ENCROACH};
 
 //============================================================================//
 //                                                                            //
-// Variables of TetGen                                                        //
+// TetGen's internally-used variables                                         //
 //                                                                            //
 //============================================================================//
 
@@ -1413,7 +1453,7 @@ public:
   int    segmentendpointslist_length;
   point  *segmentendpointslist;
   double *segment_info_list;
-  int    *idx_segment_ridge_vertex_list; // are two ridge vertices form a segment?
+  int    *idx_segment_ridge_vertex_list; // store two endpoints of a segment
   point  *segment_ridge_vertex_list;
 
   // The infinite vertex.
@@ -1422,6 +1462,11 @@ public:
   triface recenttet;
   face recentsh;
 
+  // Pre-calculated above points.
+  //   required by the tri_edge_2d() test, and incircle3d() test.
+  point _above_points[3];
+  point _above_point;
+  
   // PI is the ratio of a circle's circumference to its diameter.
   static REAL PI;
 
@@ -1429,7 +1474,7 @@ public:
   int subdomains;                                    // Number of subdomains.
   int *subdomain_markers;
 
-  // Various variables.
+  // Variables.
   int numpointattrib;                          // Number of point attributes.
   int numelemattrib;                     // Number of tetrahedron attributes.
   int sizeoftensor;                     // Number of REALs per metric tensor.
@@ -1458,12 +1503,18 @@ public:
   REAL cosslidihed;      // The cosine value of the max dihedral of a sliver.
   REAL cos_large_dihed;   // The cosine value of large dihedral (135 degree).
   REAL opt_max_sliver_asp_ratio;              // = 10 x b->opt_max_asp_ratio.
-  REAL minfaceang, minfacetdihed;     // The minimum input (dihedral) angles.
+  REAL minratio_ang;                 // The angle corresponds to b->minratio.
+  REAL min_input_facet_dihed;            // The minimum input dihedral angle.
   REAL cos_facet_separate_ang_tol;
   REAL cos_collinear_ang_tol;
+  REAL cos_flip_valid_ang_tol;
+  REAL cos_flip_valid_dihed_ang_tol;
+  REAL cos_segment_enc_angle;                  // -q//# b->segment_enc_angle.
+  REAL cos_facet_enc_dihed_angle;         // -q///# b->facet_enc_dihed_angle.
   REAL tetprism_vol_sum;   // The total volume of tetrahedral-prisms (in 4D).
   REAL longest;                          // The longest possible edge length.
   REAL minedgelength;                               // = longest * b->epsion.
+  REAL total_ele_volume;                        // -r sum of all tet volumes.
   REAL xmax, xmin, ymax, ymin, zmax, zmin;         // Bounding box of points.
 
   // Options for mesh refinement.
@@ -1553,7 +1604,6 @@ public:
   inline REAL elemattribute(tetrahedron* ptr, int attnum);
   inline void setelemattribute(tetrahedron* ptr, int attnum, REAL value);
   inline REAL* get_polar(tetrahedron* ptr);
-  inline REAL get_volume(tetrahedron* ptr);
   inline REAL volumebound(tetrahedron* ptr);
   inline void setvolumebound(tetrahedron* ptr, REAL value);
   inline int  elemindex(tetrahedron* ptr);
@@ -1725,14 +1775,28 @@ public:
 //                                                                            //
 //============================================================================//
 
-  // Symbolic perturbations (robust)
+  // Above/below plane predicate (robust)
+  REAL orient3d(point pa, point pb, point pc, point pd);
+  REAL orient4d(point pa, point pb, point pc, point pd, point pe,
+                REAL, REAL, REAL, REAL, REAL);
+  
+  // In-Sphere predicate with symbolic perturbation (robust)
   REAL insphere_s(REAL*, REAL*, REAL*, REAL*, REAL*);
   REAL orient4d_s(REAL*, REAL*, REAL*, REAL*, REAL*, 
                   REAL, REAL, REAL, REAL, REAL);
 
-  // An embedded 2-dimensional geometric predicate (non-robust)
-  REAL incircle3d(point pa, point pb, point pc, point pd);
+  // Degenerated predicates (robust)
+  REAL incircle3d(point pa, point pb, point pc, point pd, point R = NULL);
 
+  // predicates.cxx
+  void pre_calculate_insphere(point, point, point, point, REAL *subdets);
+  REAL insphere_use_subdets(tetrahedron*, REAL*);
+
+  // Set an above point for the plane passing through a set of (co-planar) points.
+  //   Required by the tri_edge_2d() test, and incircle3d() test.
+  int set_above_point3(point, point, point);
+  int set_above_point4(point, point, point, point);
+  
   // Triangle-edge intersection test (robust)
   int tri_edge_2d(point, point, point, point, point, point, int, int*, int*);
   int tri_edge_tail(point,point,point,point,point,point,REAL,REAL,int,int*,int*);
@@ -1755,6 +1819,7 @@ public:
   inline REAL distance2(REAL* p1, REAL* p2);
   void facenormal(point pa, point pb, point pc, REAL *n, int pivot, REAL *lav);
   REAL facedihedral(REAL* pa, REAL* pb, REAL* pc1, REAL* pc2);
+  REAL cos_facedihedral(REAL* pa, REAL* pb, REAL* pc1, REAL* pc2);
   REAL triarea(REAL* pa, REAL* pb, REAL* pc);
   REAL interiorangle(REAL* o, REAL* p1, REAL* p2, REAL* n);
   REAL cos_interiorangle(REAL* o, REAL* p1, REAL* p2);
@@ -1765,8 +1830,7 @@ public:
   void planelineint(REAL*, REAL*, REAL*, REAL*, REAL*, REAL*, REAL*);
   int  linelineint(REAL*, REAL*, REAL*, REAL*, REAL*, REAL*, REAL*, REAL*);
   REAL tetprismvol(REAL* pa, REAL* pb, REAL* pc, REAL* pd);
-  bool calculateabovepoint(arraypool*, point*, point*, point*);
-  void calculateabovepoint4(point, point, point, point);
+
 
 //============================================================================//
 //                                                                            //
@@ -1907,13 +1971,14 @@ public:
   void flip22(face*, int, int);
   void flip31(face*, int);
   long lawsonflip();
-  int sinsertvertex(point newpt, face*, face*, int iloc, int bowywat, int);
-  int sremovevertex(point delpt, face*, face*, int lawson);
+  int  sinsertvertex(point newpt, face*, face*, int iloc, int bowywat, int);
+  int  sremovevertex(point delpt, face*, face*, int lawson);
 
   enum locateresult slocate(point, face*, int, int, int);
   enum interresult sscoutsegment(face*, point, int, int, int);
   void scarveholes(int, REAL*);
-  int triangulate(int, arraypool*, arraypool*, int, REAL*);
+  int  get_first_triangle(arraypool*, point*, point*, point*);
+  int  triangulate(int, arraypool*, arraypool*, int, REAL*);
 
   void unifysegments();
   void identifyinputedges(point*);
@@ -2027,28 +2092,29 @@ public:
 
   bool is_collinear_at(point mid, point left, point right);
   bool is_segment(point p1, point p2);
-  bool valid_constrained_f23(triface&, point pd, point pe);
+  bool valid_constrained_f23(triface& flipface, point pd, point pe, int f44);
   bool valid_constrained_f32(triface*, point pa, point pb);
-  
-  int checkflipeligibility(int fliptype, point, point, point, point, point,
-                           int level, int edgepivot, flipconstraints* fc);
+  int  checkflipeligibility(int fliptype, point, point, point, point, point,
+                            int level, int edgepivot, flipconstraints* fc);
 
   int removeedgebyflips(triface*, flipconstraints*);
   int removefacebyflips(triface*, flipconstraints*);
 
-  int recoveredgebyflips(point, point, face*, triface*, int fullsearch, int& idir);
+  int recoveredgebyflips(point, point, face*, triface*, int fullsearch,
+                         flipconstraints &fc, int& idir);
   int add_steinerpt_in_schoenhardtpoly(triface*, int, int, int chkencflag);
   int add_steinerpt_in_segment(face*, int searchlevel, int& idir); 
   int add_steinerpt_to_recover_edge(point, point, face*, int, int, int& idir);
   int recoversegments(arraypool*, int fullsearch, int steinerflag);
 
-  int recoverfacebyflips(point,point,point,face*,triface*,int&,point*,point*);
+  int recoverfacebyflips(point, point, point, face*, triface*,
+                        flipconstraints&, int&,point*,point*);
   int recoversubfaces(arraypool*, int steinerflag);
 
   int getvertexstar(int, point searchpt, arraypool*, arraypool*, arraypool*);
   int getedge(point, point, triface*);
-  int reduceedgesatvertex(point startpt, arraypool* endptlist);
-  int removevertexbyflips(point steinerpt);
+  int reduceedgesatvertex(point startpt, arraypool* endptlist, flipconstraints &fc);
+  int removevertexbyflips(point steinerpt, flipconstraints &fc);
 
   int smoothpoint(point smtpt, arraypool*, int ccw, optparameters *opm);
   int suppressbdrysteinerpoint(point steinerpt);
@@ -2114,6 +2180,9 @@ public:
 //                                                                            //
 //============================================================================//
 
+  bool compute_field_point(triface *chktet, REAL* offcent);
+  int  insert_field_points();
+
   void makesegmentendpointsmap();
   REAL set_ridge_vertex_protecting_ball(point);
   REAL get_min_angle_at_ridge_vertex(face* seg);
@@ -2134,8 +2203,7 @@ public:
 
   void enqueuesubface(memorypool*, face*);
   void enqueuetetrahedron(triface*);
-
-  bool check_encroachment(point pa, point pb, point checkpt);
+  
   bool check_enc_segment(face *chkseg, point *pencpt);  
   bool get_steiner_on_segment(face* seg, point encpt, point newpt);
   bool split_segment(face *splitseg, point encpt, REAL *param, int qflag, int, int*);
@@ -2151,9 +2219,10 @@ public:
   enum locateresult locate_on_surface(point searchpt, face* searchsh);
   bool split_subface(face *splitfac, point encpt, REAL *ccent, REAL*, int, int, int*);
   void repairencfacs(REAL *param, int qflag, int chkencflag);
-
-  bool check_tetrahedron(triface *chktet, REAL* param, int& qflag);
+  
   bool checktet4split(triface *chktet, REAL* param, int& qflag);
+  REAL get_longest_edge(triface *chktet, triface *longedge);
+  REAL search_terminal_edge(triface *chktet, triface *termedge, face *termsh, face *termseg, int maxlevel);
   enum locateresult locate_point_walk(point searchpt, triface*, int chkencflag);
   bool split_tetrahedron(triface*, REAL*, int, int, insertvertexflags &ivf);
   void repairbadtets(REAL queratio, int chkencflag);
@@ -2167,7 +2236,7 @@ public:
 //============================================================================//
 
   long lawsonflip3d(flipconstraints *fc);
-  void recoverdelaunay();
+  void recoverdelaunay(flipconstraints &fc);
 
   int  get_seg_laplacian_center(point mesh_vert, REAL target[3]);
   int  get_surf_laplacian_center(point mesh_vert, REAL target[3]);
@@ -2182,10 +2251,17 @@ public:
   badface* top_badtet();
   void dequeue_badtet();
 
-  bool add_steinerpt_to_repair(badface *bf, bool bSmooth);
-  bool flip_edge_to_improve(triface *sliver_edge, REAL& improved_cosmaxd);
-  bool repair_tet(badface *bf, bool bFlips, bool bSmooth, bool bSteiners);
-  long repair_badqual_tets(bool bFlips, bool bSmooth, bool bSteiners);
+  bool construct_point_from_edge(REAL* e1, REAL* e2, REAL* mov_vec, REAL t, REAL angle, REAL* newpt);
+  bool move_vertex_to_improve(point mesh_vert, REAL* target_vert, REAL* move_dir, REAL in_asp, REAL in_cosmaxd);
+  bool add_steinerpt_to_remove_edge(triface *sliver_tet, triface *short_edge, REAL in_asp, REAL in_cosmaxd);
+  bool smooth_flat_S_tet(triface *sliver_edge, REAL in_asp, REAL in_cosmaxd);
+  bool is_edge_collapsible(triface *check_edge, REAL* lambda);
+  bool collapse_edge_to_improve(triface *short_edge, REAL in_asp, REAL in_cosmaxd);
+  bool flip_edge_to_improve(triface *sliver_edge, REAL in_cosmaxd);
+  bool flip_face_to_improve(triface *flip_face, REAL in_cosmaxd);
+  void get_flat_T_tet_shape(badface *bf, REAL, REAL, triface*, triface*, triface*);
+  bool repair_tet(badface *bf, bool bFlips, bool bCollapse, bool bSteiners, bool bSmooth);
+  long repair_badqual_tets(bool bFlips, bool bCollapse, bool bSteiners, bool bSmooth, bool, REAL, REAL);
   void improve_mesh();
 
 //============================================================================//
@@ -2214,6 +2290,10 @@ public:
 //                                                                            //
 //============================================================================//
 
+  // array (size = numberoftetrahedra * 6) for storing high-order nodes of each
+  // tetrahedron
+  point *highordertable;
+  
   void jettisonnodes();
   void highorder();
   void indexelements();
@@ -2230,9 +2310,11 @@ public:
   void outvoronoi(tetgenio*);
   void outsmesh(char*);
   void outmesh2medit(char*);
+  void out_mesh_to_nas();
   void outmesh2vtk(char*, int);
   void out_surfmesh_vtk(char*, int);
   void out_intersected_facets();
+  void out_nodes_Steiner_tags();
 
 
 
@@ -2252,13 +2334,16 @@ public:
     tetrahedrons = subfaces = subsegs = points = NULL;
     tet2segpool = tet2subpool = NULL;
     dummypoint = NULL;
+    
+    _above_points[0] = _above_points[1] = _above_points[2] = NULL;
+    _above_point = NULL;
 
     badtetrahedrons = badsubfacs = badsubsegs = NULL;
     split_segments_pool = split_subfaces_pool = NULL;
     unsplit_badtets = unsplit_subfaces = unsplit_segments = NULL;
     check_tets_list = NULL;
     badqual_tets_pool = NULL;
-
+    
     stack_enc_segments = stack_enc_subfaces = NULL;
   
     flippool = NULL;
@@ -2292,6 +2377,7 @@ public:
 
     subdomains = 0;
     subdomain_markers = NULL;
+    highordertable = NULL;
 
     numpointattrib = numelemattrib = 0;
     sizeoftensor = 0;
@@ -2314,11 +2400,17 @@ public:
     useinsertradius = 0;
     samples = 0l;
     randomseed = 1l;
-    minfaceang = minfacetdihed = PI;
+    minratio_ang = 0;
+    min_input_facet_dihed = PI;
     cos_facet_separate_ang_tol = cos(179.9/180.*PI);
     cos_collinear_ang_tol = cos(179.9/180.*PI);
+    cos_flip_valid_ang_tol = cos(179.97/180.*PI);
+    cos_flip_valid_dihed_ang_tol = cos(179.97/180.*PI);
+    cos_segment_enc_angle = cos(90.0/180.0*PI);
+    cos_facet_enc_dihed_angle = cos(90.0/180.0*PI);
     tetprism_vol_sum = 0.0;
     longest = minedgelength = 0.0;
+    total_ele_volume = 0.;
     xmax = xmin = ymax = ymin = zmax = zmin = 0.0;
 
     smallest_insradius = 1.e+30;
@@ -2357,6 +2449,9 @@ public:
     if (points != (memorypool *) NULL) {
       delete points;
       delete [] dummypoint;
+      for (int i = 0; i < 3; i++) {
+        delete [] _above_points[i];
+      }
     }
     if (tetrahedrons != (memorypool *) NULL) {
       delete tetrahedrons;
@@ -2438,8 +2533,10 @@ public:
     if (subdomain_markers != NULL) {
       delete [] subdomain_markers;
     }
-
-    initializetetgenmesh();
+    
+    if (highordertable != NULL) {
+        delete[] highordertable;
+    }
   }
 
   tetgenmesh()
@@ -2494,7 +2591,7 @@ inline void terminatetetgen(tetgenmesh *m, int x)
     printf("Error:  Out of memory.\n"); 
     break;
   case 2: // Encounter an internal error.
-    printf("Please report this bug to Hang.Si@wias-berlin.de. Include\n");
+    printf("Please report this bug to hangsi@dlut.edu.cn. Include\n");
     printf("  the message above, your input data set, and the exact\n");
     printf("  command line you used to run this program, thank you.\n");
     break;
@@ -2731,10 +2828,7 @@ inline REAL* tetgenmesh::get_polar(tetrahedron* ptr)
 {
   return &(((REAL *) (ptr))[polarindex]);
 }
-inline REAL tetgenmesh::get_volume(tetrahedron* ptr)
-{
-  return ((REAL *) (ptr))[polarindex + 4];
-}
+
 
 // Check or set a tetrahedron's attributes.
 
@@ -3472,21 +3566,22 @@ inline void tetgenmesh::setpoint2ppt(point pt, point value) {
   ((tetrahedron *) (pt))[point2simindex + 1] = (tetrahedron) value;
 }
 
+
 inline tetgenmesh::shellface tetgenmesh::point2sh(point pt) {
-  return (shellface) ((tetrahedron *) (pt))[point2simindex + 2];
+  return (shellface) ((tetrahedron *) (pt))[point2simindex + 3];
 }
 
 inline void tetgenmesh::setpoint2sh(point pt, shellface value) {
-  ((tetrahedron *) (pt))[point2simindex + 2] = (tetrahedron) value;
+  ((tetrahedron *) (pt))[point2simindex + 3] = (tetrahedron) value;
 }
 
 
 inline tetgenmesh::tetrahedron tetgenmesh::point2bgmtet(point pt) {
-  return ((tetrahedron *) (pt))[point2simindex + 3];
+  return ((tetrahedron *) (pt))[point2simindex + 4];
 }
 
 inline void tetgenmesh::setpoint2bgmtet(point pt, tetrahedron value) {
-  ((tetrahedron *) (pt))[point2simindex + 3] = value;
+  ((tetrahedron *) (pt))[point2simindex + 4] = value;
 }
 
 

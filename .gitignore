@@ -1,0 +1,4 @@
+build*/
+# Stray CTest output created when `ctest` is run from the repo root instead
+# of the build directory (see TESTING.md "Troubleshooting").
+/Testing/

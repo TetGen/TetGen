@@ -2,7 +2,8 @@
 
 TetGen uses [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) to
 run automated tests against a collection of mesh input files. Each input file
-becomes an individual test with its own pass/fail/skip status, making it easy to
+for each set of flags attached to it becomes an individual test 
+with its own pass/fail/skip status, making it easy to
 identify regressions and track results in a dashboard.
 
 ## Prerequisites
@@ -39,13 +40,6 @@ URL or local path (in addition to enabling testing):
 cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_REPO=<url_or_path>
 ```
 
-Other useful options when enabling testing:
-
-```bash
-cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTESTFILES_BRANCH=<branch>
-cmake -B <build-dir> -DTETGEN_ENABLE_TESTING=ON -DTETGEN_TEST_TIMEOUT=<seconds>
-```
-
 The value can be:
 
 - a **remote URL**, e.g. `https://codeberg.org/TetGen/TetGenTests.git`
@@ -54,15 +48,15 @@ The value can be:
 The test files repository is **shallow-cloned** (`--depth 1`) into
 `<build-dir>/testfiles/` at configure time. Only committed files are picked up.
 
-## CMake Options
+## All CMake Options to control testing
 
 | Variable | Default | Description |
 |---|---|---|
 | `TETGEN_ENABLE_TESTING` | `OFF` | Enable CTest testing infrastructure (must be set to `ON` to register tests) |
-| `BUILD_TESTING` | `ON` (when enabled) | Master switch for CTest (standard CMake variable; only used if `TETGEN_ENABLE_TESTING` is `ON`) |
 | `TESTFILES_REPO` | `https://codeberg.org/TetGen/TetGenTests.git` | URL or local path to the test-file Git repository |
 | `TESTFILES_BRANCH` | `main` | Branch in test files repo to be used |
 | `TETGEN_TEST_TIMEOUT` | `60` | Timeout for each test in seconds |
+| `BUILD_TESTING` | `ON` (when enabled) | Master switch for CTest (standard CMake variable; only used if `TETGEN_ENABLE_TESTING` is `ON`) |
 
 ## Test Discovery
 
@@ -152,7 +146,7 @@ runs ctest normally and appends an extra block with the actual reason, taken
 from each test's per-test log file:
 
 ```bash
-./ctest-report.sh --test-dir <build-dir> --output-on-failure
+./cmake/ctest-report.sh --test-dir <build-dir> --output-on-failure
 ```
 
 ```
@@ -218,6 +212,31 @@ ctest --test-dir <build-dir> --output-on-failure --output-log ctest.log
 This creates `ctest.log` in the current working directory with the aggregated
 output of all tests.
 
+### Troubleshooting: "I don't see any log files"
+
+CTest resolves its test list from the *current working directory* (or
+whatever `--test-dir` points to), not from the source tree. If you invoke
+`ctest` with no `--test-dir` from the **repository root** instead of the
+build directory, it will not find `<build-dir>/CTestTestfile.cmake`, silently
+report 0 tests, and create an empty `Testing/` folder right there in the
+source tree — with no per-test logs anywhere. If you ever see a stray,
+nearly-empty `Testing/` directory next to `CMakeLists.txt`, this is what
+happened; it's safe to delete and is git-ignored.
+
+To avoid this, always do one of:
+
+```bash
+ctest --test-dir <build-dir> --output-on-failure   # from anywhere
+# or
+cd <build-dir> && ctest --output-on-failure        # cwd is the build dir
+```
+
+Also double-check that tests were actually registered at configure time —
+CMake prints `-- Registered N TetGen test(s) from ...` when
+`-DTETGEN_ENABLE_TESTING=ON` is in effect. If `N` is 0, or you don't see that
+line at all, testing wasn't enabled for that build directory (it's disabled
+by default) and no logs will ever be produced there.
+
 ## Return Code Dispatch
 
 TetGen returns different exit codes depending on the outcome. The CMake test
@@ -241,10 +260,10 @@ the results and do not count as failures.
 ## Standalone Test Script
 
 For quick batch testing without CMake/CTest, the shell script
-[runtest.sh](runtest.sh) can be used directly:
+[cmake/runtest.sh](runtest.sh) can be used directly:
 
 ```bash
-./runtest.sh <tetgen-binary> <options> <directory> [filetypes]
+./cmake/runtest.sh <tetgen-binary> <options> <directory> [filetypes]
 ```
 
 For example:

@@ -4,7 +4,7 @@
 
 # runtest.sh
 #
-#   A shell script to batch-run TetGen tests.
+#   A shell script to batch-run TetGen tests independent of CMake
 #   The runtime information of TetGen is saved in file: log.txt.
 #   The test report is found in file: report.txt
 #

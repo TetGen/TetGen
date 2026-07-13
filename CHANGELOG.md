@@ -24,9 +24,9 @@
 -   Modernized CMake build: project versioning, proper install/export
     rules and package config (`find_package(TetGen)`), and an optional
     CTest-based test suite.
--   Upstream repository on codeberg.org
+-   Upstream repository on codeberg.org with read-only error on github
 -   New contributing guidelines (dual AGPLv3/MIT licensing for contributions)
--   CI workflow with more than 200 test cases
+-   CI workflow with more than 300 test cases
 
 
 ## Version 1.6.0 (August 31, 2020)

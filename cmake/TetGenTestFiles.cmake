@@ -19,6 +19,12 @@
 
 set(TETGEN_TESTS
   # --- tetgen/ ---
+  "tetgen/L.smesh|-p|-pY|-pq|-pqY|qm"
+  "tetgen/bar2.poly|-p|-pY|-pq|-pqY"
+  #  "tetgen/bar2.poly|-p|-pY|-pq|-pqY|-pq1.414a0.1aA"
+  "tetgen/cow.smesh|-p|-pY|-pq|-pqY"
+  "tetgen/socket.off|-p|-pY|-pq|-pqY|-pO"
+  "tetgen/sphere.stl|-p|-pY|-pq|-pqY"
   "tetgen/balls3astr_12_16_20.poly|-p|-pY|-pq|-pqY"
   "tetgen/cav1.poly|-p|-pY|-pq|-pqY"
   "tetgen/cav2.poly|-p|-pY|-pq|-pqY"

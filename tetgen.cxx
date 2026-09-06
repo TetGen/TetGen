@@ -29117,7 +29117,7 @@ void tetgenmesh::repairencfacs(REAL *param, int qflag, int chkencflag)
 
   bool ref_subface = ((b->cdtrefine & 2) > 0); // -D2, -D3, -D6, -D7
 
-  int bak_minratio = b->minratio;
+  double bak_minratio = b->minratio;
   bool qrefinelist = (b->refine || (in->refine_elem_list != NULL));
   if (qrefinelist) {
     //ref_subface = true;
@@ -30423,7 +30423,7 @@ void tetgenmesh::delaunayrefinement()
 
     bool ref_surface = ((b->cdtrefine & 2) > 0); // -D2, -D3, -D6, or -D7
     
-    int bak_minratio = b->minratio;
+    double bak_minratio = b->minratio;
     ////bool qrefinelist = (b->refine || (in->refine_elem_list != NULL));
     //if (qrefinelist) {
     //  // Always refine surface when a refine_elem_list is given.

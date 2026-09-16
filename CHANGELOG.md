@@ -1,6 +1,8 @@
 # TetGen: Release Notes
 
-## Version 1.6.1 (unreleased)
+## Version 1.6.1 (September 16, 2026)
+    (Mostly AI generated changelog)
+-   Various bug fixes
 -   New mesh-quality controls: segment/facet encroachment angles
     (`-q//#`, `-q///#`), minimum edge length (`-L#`) and element growth
     ratio (`-L/#`) constraints, and a new multi-phase mesh-improvement
@@ -22,11 +24,10 @@
     back to exact arithmetic when needed.
 -   Removed the legacy NEU_MESH format and the `-H` hole-mesh option.
 -   Modernized CMake build: project versioning, proper install/export
-    rules and package config (`find_package(TetGen)`), and an optional
-    CTest-based test suite.
+    rules and package config (`find_package(TetGen)`)
+-   Optional CTest-based test suite with more than 300 test cases
 -   Upstream repository on codeberg.org with read-only error on github
 -   New contributing guidelines (dual AGPLv3/MIT licensing for contributions)
--   CI workflow with more than 300 test cases
 
 
 ## Version 1.6.0 (August 31, 2020)
@@ -49,6 +50,19 @@
 -   (Change of the -d option) To detect self-intersection in the input
     surface mesh is now directly done in the constrained
     tetrahedralization algorithm (the -p option).
+
+## Version 1.5.1 (August 17, 2018)
+    (Mostly AI generated changelog)
+-   Identical with source code on https://github.com/ufz/tetgen
+-   Refactored data structure naming for improved code clarity:
+    renamed `adjtetlist` to `face2tetlist`, `edgeadjtetlist` to
+    `edge2tetlist`, and added `point2tetlist`, `tet2facelist`, `tet2edgelist`,
+    and `face2edgelist` for better adjacency information management.
+-   Performance optimizations: removed debug assert statements from
+    critical code paths; improved mesh I/O with binary STL file support
+    and byte-order conversions via new `SwapBytes()` function.
+-   Enhanced robustness with improved null pointer checks and error
+    handling in file loading routines (`.var`, `.mtr`, `.medit` formats).
 
 ## Version 1.5.0 (November 4, 2013)
 
